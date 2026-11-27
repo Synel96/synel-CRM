@@ -46,7 +46,10 @@ export interface Deal extends BaseRecord {
 
 export type TaskPriority = "low" | "normal" | "high";
 
-export type RelatedRef = { type: "contact" | "company" | "deal"; id: Id };
+export type CoreRelatedType = "contact" | "company" | "deal";
+
+/** Bővítmények saját típust is használhatnak (pl. "property"). */
+export type RelatedRef = { type: CoreRelatedType | (string & {}); id: Id };
 
 export interface Task extends BaseRecord {
   title: string;
@@ -73,9 +76,11 @@ export interface CrmData {
   deals: Deal[];
   tasks: Task[];
   activities: Activity[];
+  /** Bővítmények adatai, a bővítmény id-ja szerint (lásd src/crm/addons.ts). */
+  addons: Record<string, unknown>;
 }
 
-export type Collection = Exclude<keyof CrmData, "version">;
+export type Collection = Exclude<keyof CrmData, "version" | "addons">;
 
 export type RecordOf<C extends Collection> = CrmData[C][number];
 
@@ -91,4 +96,5 @@ export const emptyData = (): CrmData => ({
   deals: [],
   tasks: [],
   activities: [],
+  addons: {},
 });

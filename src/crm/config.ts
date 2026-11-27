@@ -70,15 +70,16 @@ export const crmConfigSchema = z
         tasks: z.boolean().default(true),
       })
       .default({ companies: true, deals: true, tasks: true }),
-    /** Egyedi elnevezések: pl. a „Üzletek” helyett „Ingatlanok”. */
-    labels: z
-      .object({
-        contacts: z.string().optional(),
-        companies: z.string().optional(),
-        deals: z.string().optional(),
-        tasks: z.string().optional(),
-      })
-      .default({}),
+    /**
+     * Bekapcsolt bővítmények id-jai (pl. ["real-estate"]). Az elérhető
+     * bővítmények listája: src/crm/addon-registry.ts
+     */
+    addons: z.array(z.string().min(1)).default([]),
+    /**
+     * Menüpontok átnevezése: kulcs a menüpont azonosítója (contacts,
+     * companies, deals, tasks, vagy egy bővítményé, pl. properties).
+     */
+    labels: z.record(z.string(), z.string().min(1)).default({}),
     pipeline: z.array(stageSchema).min(2),
     contactTags: z.array(z.string().min(1)).default([]),
     customFields: z
@@ -88,6 +89,8 @@ export const crmConfigSchema = z
         deal: z.array(customFieldSchema).default([]),
         task: z.array(customFieldSchema).default([]),
       })
+      // Bővítmények saját entitásai is kaphatnak egyedi mezőt (pl. property).
+      .catchall(z.array(customFieldSchema))
       .default({ contact: [], company: [], deal: [], task: [] }),
   })
   .superRefine((cfg, ctx) => {
@@ -102,8 +105,8 @@ export const crmConfigSchema = z
         message: "Legalább egy nyitott stage kell",
       });
     }
-    for (const entity of ENTITY_TYPES) {
-      const keys = cfg.customFields[entity].map((f) => f.key);
+    for (const [entity, fields] of Object.entries(cfg.customFields)) {
+      const keys = fields.map((f) => f.key);
       if (new Set(keys).size !== keys.length) {
         ctx.addIssue({
           code: "custom",
@@ -118,6 +121,11 @@ export type CrmConfigInput = z.input<typeof crmConfigSchema>;
 export type CrmConfig = z.output<typeof crmConfigSchema>;
 export type CustomFieldDef = z.output<typeof customFieldSchema>;
 export type Stage = z.output<typeof stageSchema>;
+
+/** Egy entitás egyedi mezői (bővítmény-entitásnál is; ha nincs, üres lista). */
+export function customFieldsOf(config: CrmConfig, entity: string): CustomFieldDef[] {
+  return config.customFields[entity] ?? [];
+}
 
 /** Típusellenőrzött config-definíció; hibás config esetén induláskor hibát dob. */
 export function defineCrmConfig(input: CrmConfigInput): CrmConfig {

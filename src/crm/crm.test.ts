@@ -24,7 +24,7 @@ describe("crm.config", () => {
   it("a gyári config és az ingatlanos preset is érvényes", () => {
     expect(crmConfig.pipeline.length).toBeGreaterThan(1);
     expect(realEstate.modules.companies).toBe(false);
-    expect(realEstate.labels.deals).toBe("Ingatlanok");
+    expect(realEstate.addons).toEqual(["real-estate"]);
   });
 
   it("hibás configra érthető hibát dob", () => {
@@ -123,10 +123,35 @@ describe("operations", () => {
   });
 });
 
+// Teszt-config: üzlet-szintű egyedi mezők, kikapcsolt cégek modul.
+const dealCfg = defineCrmConfig({
+  brand: { name: "Teszt" },
+  modules: { companies: false, deals: true, tasks: true },
+  pipeline: [
+    { id: "active", label: "Aktív", probability: 50 },
+    { id: "won", label: "Nyert", probability: 100, kind: "won" },
+  ],
+  customFields: {
+    deal: [
+      {
+        key: "listingType",
+        label: "Típus",
+        type: "select",
+        options: ["Eladó", "Kiadó"],
+        required: true,
+      },
+      { key: "city", label: "Település", type: "text", required: true },
+      { key: "areaSize", label: "m²", type: "number" },
+      { key: "roomCount", label: "Szobák", type: "number" },
+      { key: "exclusive", label: "Kizárólagos", type: "boolean" },
+    ],
+  },
+});
+
 describe("fields", () => {
   it("egyedi mezők oda-vissza konvertálása", () => {
-    const data = createDemoData(realEstate, NOW);
-    const fields = fieldsFor("deal", realEstate, data);
+    const data = createDemoData(dealCfg, NOW);
+    const fields = fieldsFor("deal", dealCfg, data);
     expect(fields.some((f) => f.name === "companyId")).toBe(false); // companies modul ki van kapcsolva
 
     const values = {
@@ -156,7 +181,7 @@ describe("fields", () => {
   });
 
   it("kötelező mezők és hibás szám jelzése", () => {
-    const fields = fieldsFor("deal", realEstate, emptyData());
+    const fields = fieldsFor("deal", dealCfg, emptyData());
     const errors = validate({ ...toFormValues({ custom: {} }, fields), value: "abc" }, fields);
     expect(Object.keys(errors)).toEqual(
       expect.arrayContaining(["title", "value", "stageId", "custom.listingType", "custom.city"])
@@ -174,7 +199,7 @@ describe("fields", () => {
 describe("storage és store", () => {
   it("üres tárolónál mintaadattal indul, és a módosítás mentődik", async () => {
     const adapter = memoryAdapter();
-    const store = createCrmStore(adapter, () => createDemoData(crmConfig, NOW));
+    const store = createCrmStore(adapter, { config: crmConfig, addons: [], seedDemoData: true });
     await store.start();
     expect(store.getState().status).toBe("ready");
     const before = store.getState().data.contacts.length;
@@ -195,7 +220,7 @@ describe("storage és store", () => {
 
   it("meglévő adatot nem ír felül mintaadattal", async () => {
     const adapter = memoryAdapter(emptyData());
-    const store = createCrmStore(adapter, () => createDemoData(crmConfig, NOW));
+    const store = createCrmStore(adapter, { config: crmConfig, addons: [], seedDemoData: true });
     await store.start();
     expect(store.getState().data.contacts).toHaveLength(0);
   });

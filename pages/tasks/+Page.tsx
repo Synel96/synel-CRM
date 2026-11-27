@@ -8,9 +8,10 @@ import { EntitySheet, type SheetTarget } from "@/components/crm/EntitySheet";
 import { CrmPage, EmptyState, accentButton } from "@/components/crm/Page";
 import { cn } from "@/lib/utils";
 import { formatDate, t } from "@/src/crm/i18n";
-import { contactName, taskBucket, type TaskBucket } from "@/src/crm/operations";
+import { taskBucket, type TaskBucket } from "@/src/crm/operations";
+import { relatedLabel } from "@/src/crm/related";
 import { useCrm } from "@/src/crm/store";
-import type { RelatedRef, Task } from "@/src/crm/types";
+import type { Task } from "@/src/crm/types";
 
 const BUCKETS: TaskBucket[] = ["overdue", "today", "upcoming", "someday", "done"];
 const PRIORITY_VARIANT = { high: "danger", normal: "outline", low: "default" } as const;
@@ -19,16 +20,6 @@ export default function Page() {
   const { data, store } = useCrm();
   const [quickTitle, setQuickTitle] = useState("");
   const [target, setTarget] = useState<SheetTarget | null>(null);
-
-  const relatedLabel = (ref: RelatedRef | null) => {
-    if (!ref) return "";
-    if (ref.type === "contact") {
-      const c = data.contacts.find((x) => x.id === ref.id);
-      return c ? contactName(c, crmConfig.locale) : "";
-    }
-    if (ref.type === "company") return data.companies.find((x) => x.id === ref.id)?.name ?? "";
-    return data.deals.find((x) => x.id === ref.id)?.title ?? "";
-  };
 
   const grouped = new Map<TaskBucket, Task[]>(BUCKETS.map((b) => [b, []]));
   for (const task of data.tasks) grouped.get(taskBucket(task))!.push(task);
@@ -115,7 +106,7 @@ export default function Page() {
                     <span className="block truncate">{task.title}</span>
                     {task.related && (
                       <span className="text-muted-foreground block truncate text-xs no-underline">
-                        {relatedLabel(task.related)}
+                        {relatedLabel(data, task.related)}
                       </span>
                     )}
                   </button>

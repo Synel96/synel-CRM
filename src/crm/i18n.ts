@@ -89,6 +89,7 @@ const hu = {
   "settings.modules": "Modulok",
   "settings.pipeline": "Pipeline fázisok",
   "settings.customFields": "Egyedi mezők",
+  "settings.addons": "Bővítmények",
   "settings.data": "Adatok",
   "settings.dataHint": "Az adatok jelenleg ebben a böngészőben tárolódnak.",
   "settings.export": "Exportálás (JSON)",
@@ -183,6 +184,7 @@ const en: Record<MessageKey, string> = {
   "settings.modules": "Modules",
   "settings.pipeline": "Pipeline stages",
   "settings.customFields": "Custom fields",
+  "settings.addons": "Add-ons",
   "settings.data": "Data",
   "settings.dataHint": "Data is currently stored in this browser.",
   "settings.export": "Export (JSON)",
@@ -198,16 +200,18 @@ const dictionaries = { hu, en } as const;
 
 const dict: Record<MessageKey, string> = dictionaries[crmConfig.locale];
 
-/** A config `labels` mezője felülírja a modulnevek alapértelmezését. */
-const labelOverrides: Partial<Record<MessageKey, string | undefined>> = {
-  "nav.contacts": crmConfig.labels.contacts,
-  "nav.companies": crmConfig.labels.companies,
-  "nav.deals": crmConfig.labels.deals,
-  "nav.tasks": crmConfig.labels.tasks,
-};
-
+/** A config `labels` mezője felülírja a menüpontok alapértelmezett nevét. */
 export function t(key: MessageKey): string {
-  return labelOverrides[key] ?? dict[key];
+  if (key.startsWith("nav.")) {
+    const override = crmConfig.labels[key.slice(4)];
+    if (override) return override;
+  }
+  return dict[key];
+}
+
+/** Menüpont neve: config-felülírás, különben a megadott alapértelmezés. */
+export function navLabel(id: string, fallback: string): string {
+  return crmConfig.labels[id] ?? fallback;
 }
 
 export const locale = crmConfig.locale === "hu" ? "hu-HU" : "en-GB";

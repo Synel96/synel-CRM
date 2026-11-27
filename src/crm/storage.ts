@@ -58,5 +58,8 @@ export function parseCrmData(raw: string): CrmData {
       throw new Error(`Hibás mező: ${key}`);
     }
   }
-  return { ...base, ...value, version: 1 } as CrmData;
+  if (value.addons !== undefined && (typeof value.addons !== "object" || value.addons === null)) {
+    throw new Error("Hibás mező: addons");
+  }
+  return { ...base, ...value, addons: value.addons ?? {}, version: 1 } as CrmData;
 }

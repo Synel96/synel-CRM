@@ -17,6 +17,12 @@ export type FormField = {
   required: boolean;
   options?: { value: string; label: string }[];
   wide?: boolean;
+  /** Üres szám/pénz mező null legyen (0 helyett). */
+  nullable?: boolean;
+  /** Segédszöveg a mező alatt. */
+  hint?: string;
+  /** Címke-mezőnél: csak a felkínált opciók választhatók (nincs szabad szöveg). */
+  optionsOnly?: boolean;
 };
 
 export type FormValues = Record<string, string | boolean>;
@@ -132,7 +138,7 @@ function convert(f: FormField, v: string | boolean): unknown {
   switch (f.type) {
     case "number":
     case "money": {
-      if (s === "") return f.name.startsWith("custom.") ? null : 0;
+      if (s === "") return f.name.startsWith("custom.") || f.nullable ? null : 0;
       const n = Number(s.replace(/\s/g, "").replace(",", "."));
       return Number.isFinite(n) ? n : null;
     }

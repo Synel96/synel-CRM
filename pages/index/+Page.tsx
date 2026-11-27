@@ -3,7 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardTitle } from "@/components/ui/card";
 import { CrmPage, EmptyState } from "@/components/crm/Page";
 import { formatDate, formatDateTime, formatMoney, t } from "@/src/crm/i18n";
-import { contactName, dashboardStats, pipelineSummary, taskBucket } from "@/src/crm/operations";
+import { activeAddons } from "@/src/crm/addon-registry";
+import { dashboardStats, pipelineSummary, taskBucket } from "@/src/crm/operations";
+import { relatedLabel } from "@/src/crm/related";
 import { useCrm } from "@/src/crm/store";
 
 export default function Page() {
@@ -19,15 +21,6 @@ export default function Page() {
     .sort((a, b) => (a.dueDate ?? "").localeCompare(b.dueDate ?? ""))
     .slice(0, 6);
   const recent = [...data.activities].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 6);
-
-  const relatedName = (type: string, id: string) => {
-    if (type === "contact") {
-      const c = data.contacts.find((x) => x.id === id);
-      return c ? contactName(c, crmConfig.locale) : "";
-    }
-    if (type === "company") return data.companies.find((x) => x.id === id)?.name ?? "";
-    return data.deals.find((x) => x.id === id)?.title ?? "";
-  };
 
   const kpis = [
     { label: t("dashboard.contacts"), value: String(stats.contacts), show: true },
@@ -60,6 +53,8 @@ export default function Page() {
           </Card>
         ))}
       </div>
+
+      {activeAddons().map((a) => (a.DashboardWidget ? <a.DashboardWidget key={a.id} /> : null))}
 
       <div className="grid gap-4 lg:grid-cols-2">
         {modules.deals && (
@@ -127,7 +122,7 @@ export default function Page() {
               {recent.map((a) => (
                 <li key={a.id} className="flex flex-col gap-0.5 py-2 text-sm">
                   <span className="text-muted-foreground text-xs">
-                    {t(`activity.${a.kind}`)} · {relatedName(a.related.type, a.related.id)} ·{" "}
+                    {t(`activity.${a.kind}`)} · {relatedLabel(data, a.related)} ·{" "}
                     {formatDateTime(a.at)}
                   </span>
                   <span className="line-clamp-2">{a.body}</span>

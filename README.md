@@ -45,7 +45,8 @@ Első induláskor mintaadatokkal tölti fel magát (`seedDemoData: true`).
    | `currency`     | ISO pénznemkód, pl. `"HUF"`, `"EUR"`                          |
    | `storageKey`   | Egyedi kulcs a böngészős tároláshoz (ügyfelenként más legyen) |
    | `modules`      | Cégek / üzletek / feladatok ki-be kapcsolása                  |
-   | `labels`       | Modulok átnevezése, pl. `{ deals: "Projektek" }`              |
+   | `addons`       | Bővítmények bekapcsolása, pl. `["real-estate"]` (lásd lent)   |
+   | `labels`       | Menüpontok átnevezése, pl. `{ deals: "Projektek" }`           |
    | `pipeline`     | Fázisok esélyszázalékkal, `kind: "won"` / `"lost"` zárással   |
    | `contactTags`  | Választható címkék a kapcsolatokhoz                           |
    | `customFields` | Egyedi mezők entitásonként (lásd lent)                        |
@@ -67,9 +68,9 @@ Első induláskor mintaadatokkal tölti fel magát (`seedDemoData: true`).
 ```ts
 customFields: {
   deal: [
-    { key: "listingType", label: "Típus", type: "select",
-      options: ["Eladó", "Kiadó"], required: true, showInList: true },
-    { key: "areaSize", label: "Alapterület (m²)", type: "number" },
+    { key: "source", label: "Forrás", type: "select",
+      options: ["Weboldal", "Ajánlás"], required: true, showInList: true },
+    { key: "budget", label: "Keret", type: "money" },
   ],
 }
 ```
@@ -81,11 +82,46 @@ customFields: {
 - Az űrlapok, a validáció és a megjelenítés automatikusan generálódik.
   A felülethez nem kell kódot írni.
 
+## Bővítmények (add-onok)
+
+Iparág-specifikus funkciók külön, hozzáadható bővítményként készülnek, nem
+a CRM magjában. Egy bővítmény egy önálló mappa a `modules/` alatt: saját
+adatokkal, oldalakkal, menüpontokkal, áttekintő widgettel és kapcsolatpanellel.
+
+| Bővítmény     | Mappa                  | Leírás                                                    |
+| ------------- | ---------------------- | --------------------------------------------------------- |
+| `real-estate` | `modules/real-estate/` | Ingatlanok, fotók, vevői keresések, automatikus párosítás |
+
+**Bekapcsolás:** `crm.config.ts` → `addons: ["real-estate"]`.
+
+**Új bővítmény készítése:**
+
+1. Hozz létre egy mappát: `modules/<név>/`.
+2. Az `index.ts` exportáljon egy `defineAddon({...})` objektumot
+   (interfész és leírás: `src/crm/addons.ts`). Lehetséges részei:
+   - `nav`: menüpontok;
+   - `emptyData`, `normalize`, `seed`: az adatok kezdőállapota, betöltése
+     és mintaadatai;
+   - `onCoreRemove`: takarítás, amikor egy kapcsolat vagy cég törlődik;
+   - `relatedLabel`: a tevékenységek és feladatok hivatkozásainak neve;
+   - `DashboardWidget`, `ContactPanel`: saját elemek az áttekintésen és a
+     kapcsolat szerkesztőjében.
+3. Az oldalak a saját mappában élnek: `modules/<név>/pages/<oldal>/+Page.tsx`,
+   mellette egy `+route.ts`, ami rögzíti az URL-t (pl. `export default "/properties";`).
+4. Vedd fel a bővítményt a `src/crm/addon-registry.ts`-be, és kapcsold be a
+   configban.
+
+A bővítmény adatai a közös tárolóban, a `data.addons["<id>"]` kulcs alatt
+vannak (az export, az import és a mintaadatok is kezelik őket), és a
+`store.updateAddon(id, fn)` függvénnyel módosíthatók. Saját entitásai is
+kaphatnak egyedi mezőt a configban (`customFields.<entitás>`).
+
 ## Felépítés
 
 ```
 crm.config.ts            ← ügyfél-konfiguráció
 presets/                 ← iparági preset-ek
+modules/                 ← bővítmények (pl. real-estate)
 src/crm/
   config.ts              ← config-séma (zod) + defineCrmConfig()
   types.ts               ← adatmodell (Contact, Company, Deal, Task, Activity)
@@ -95,6 +131,10 @@ src/crm/
   store.ts               ← állapot + useCrm() hook
   seed.ts                ← mintaadatok
   i18n.ts                ← fordítások, pénz- és dátumformázás
+  addons.ts              ← bővítmény-interfész (defineAddon)
+  addon-registry.ts      ← elérhető bővítmények listája
+  addon-data.ts          ← bővítményadatok előkészítése, törlési hookok
+  related.ts             ← hivatkozások olvasható neve (mag + bővítmények)
   crm.test.ts            ← unit tesztek
 components/crm/          ← AppShell, EntitySheet (generikus szerkesztő), DataTable, ActivityLog
 pages/                   ← oldalak (/, /contacts, /companies, /deals, /tasks, /settings)

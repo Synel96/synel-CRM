@@ -22,7 +22,8 @@ import {
 } from "@/components/ui/push-drawer";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
-import { t } from "@/src/crm/i18n";
+import { activeAddons } from "@/src/crm/addon-registry";
+import { navLabel, t } from "@/src/crm/i18n";
 import { useCrm } from "@/src/crm/store";
 
 type NavItem = { href: string; label: string; icon: LucideIcon };
@@ -37,6 +38,9 @@ function navItems(): NavItem[] {
       : []),
     ...(m.deals ? [{ href: "/deals", label: t("nav.deals"), icon: BriefcaseIcon }] : []),
     ...(m.tasks ? [{ href: "/tasks", label: t("nav.tasks"), icon: CheckSquareIcon }] : []),
+    ...activeAddons().flatMap((a) =>
+      a.nav().map((n) => ({ href: n.href, label: navLabel(n.id, n.label), icon: n.icon }))
+    ),
     { href: "/settings", label: t("nav.settings"), icon: SettingsIcon },
   ];
 }

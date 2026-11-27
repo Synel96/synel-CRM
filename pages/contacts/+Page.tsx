@@ -9,6 +9,7 @@ import { DataTable, type Column } from "@/components/crm/DataTable";
 import { EntitySheet, type SheetTarget } from "@/components/crm/EntitySheet";
 import { CrmPage, accentButton } from "@/components/crm/Page";
 import { customColumns } from "@/components/crm/customColumns";
+import { activeAddons } from "@/src/crm/addon-registry";
 import { t } from "@/src/crm/i18n";
 import { contactName, matchesQuery } from "@/src/crm/operations";
 import { useCrm } from "@/src/crm/store";
@@ -105,7 +106,14 @@ export default function Page() {
         onClose={() => setTarget(null)}
         title={(c) => (c ? name(c) : `${t("common.new")}: ${t("nav.contacts").toLowerCase()}`)}
       >
-        {(c) => <ActivityLog related={{ type: "contact", id: c.id }} />}
+        {(c) => (
+          <>
+            {activeAddons().map((a) =>
+              a.ContactPanel ? <a.ContactPanel key={a.id} contactId={c.id} /> : null
+            )}
+            <ActivityLog related={{ type: "contact", id: c.id }} />
+          </>
+        )}
       </EntitySheet>
     </CrmPage>
   );

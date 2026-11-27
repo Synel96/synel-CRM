@@ -1,6 +1,10 @@
 /*
  * Példa-preset: ingatlaniroda. Használat a gyökér crm.config.ts-ben:
  *   export { default } from "./presets/real-estate";
+ *
+ * Bekapcsolja az ingatlanos bővítményt (modules/real-estate): ingatlanok,
+ * fotók, vevői keresési igények és automatikus párosítás. Az „Üzletek”
+ * modul itt az ügyletek (adásvételi folyamat) követésére szolgál.
  */
 import { defineCrmConfig } from "../src/crm/config";
 
@@ -10,45 +14,29 @@ export default defineCrmConfig({
   currency: "HUF",
   storageKey: "real-estate-crm",
   seedDemoData: true,
+  addons: ["real-estate"],
   modules: { companies: false, deals: true, tasks: true },
-  labels: { contacts: "Ügyfelek", deals: "Ingatlanok" },
+  labels: { contacts: "Ügyfelek", deals: "Ügyletek" },
   pipeline: [
-    { id: "intake", label: "Felvétel alatt", probability: 10 },
-    { id: "active", label: "Aktív hirdetés", probability: 40 },
-    { id: "viewing", label: "Megtekintések", probability: 60 },
-    { id: "offer", label: "Ajánlat / foglaló", probability: 85 },
-    { id: "sold", label: "Eladva", probability: 100, kind: "won" },
-    { id: "withdrawn", label: "Visszavonva", probability: 0, kind: "lost" },
+    { id: "inquiry", label: "Érdeklődés", probability: 10 },
+    { id: "viewing", label: "Megtekintés", probability: 30 },
+    { id: "offer", label: "Vételi ajánlat", probability: 60 },
+    { id: "deposit", label: "Foglaló", probability: 85 },
+    { id: "closed", label: "Adásvétel / bérleti szerződés", probability: 100, kind: "won" },
+    { id: "failed", label: "Meghiúsult", probability: 0, kind: "lost" },
   ],
-  contactTags: ["Eladó", "Vevő", "Bérlő", "Bérbeadó"],
+  contactTags: ["Eladó", "Vevő", "Bérlő", "Bérbeadó", "Befektető"],
   customFields: {
     contact: [
-      { key: "budgetMax", label: "Max. költségkeret", type: "money" },
-      { key: "searchArea", label: "Keresett környék", type: "text", showInList: true },
-    ],
-    company: [],
-    deal: [
       {
-        key: "listingType",
-        label: "Típus",
+        key: "source",
+        label: "Forrás",
         type: "select",
-        options: ["Eladó", "Kiadó"],
-        required: true,
+        options: ["ingatlan.com", "Ajánlás", "Weboldal", "Tábla", "Egyéb"],
         showInList: true,
       },
-      {
-        key: "propertyType",
-        label: "Ingatlan típusa",
-        type: "select",
-        options: ["Lakás", "Ház", "Telek", "Iroda", "Üzlethelyiség"],
-        showInList: true,
-      },
-      { key: "city", label: "Település", type: "text", required: true },
-      { key: "areaSize", label: "Alapterület (m²)", type: "number" },
-      { key: "roomCount", label: "Szobák száma", type: "number" },
-      { key: "commissionPct", label: "Jutalék (%)", type: "number" },
-      { key: "exclusive", label: "Kizárólagos megbízás", type: "boolean" },
     ],
-    task: [],
+    // A bővítmény entitásai is kaphatnak egyedi mezőt:
+    property: [{ key: "energyCert", label: "Energetikai tanúsítvány", type: "text" }],
   },
 });

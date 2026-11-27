@@ -71,12 +71,20 @@ export function removeRecord(data: CrmData, collection: Collection, id: Id): Crm
     next.deals = next.deals.map((d) => (d.contactId === id ? { ...d, contactId: null } : d));
   }
   const relType = RELATED_TYPE[collection];
-  if (relType) {
-    const matches = (ref: RelatedRef | null) => ref?.type === relType && ref.id === id;
-    next.activities = next.activities.filter((a) => !matches(a.related));
-    next.tasks = next.tasks.map((t) => (matches(t.related) ? { ...t, related: null } : t));
-  }
-  return next;
+  return relType ? detachRelated(next, { type: relType, id }) : next;
+}
+
+/**
+ * Egy rekordra mutató hivatkozások takarítása: a tevékenységei törlődnek,
+ * a feladatai megmaradnak hivatkozás nélkül. Bővítmények is használják.
+ */
+export function detachRelated(data: CrmData, target: RelatedRef): CrmData {
+  const matches = (ref: RelatedRef | null) => ref?.type === target.type && ref.id === target.id;
+  return {
+    ...data,
+    activities: data.activities.filter((a) => !matches(a.related)),
+    tasks: data.tasks.map((t) => (matches(t.related) ? { ...t, related: null } : t)),
+  };
 }
 
 /** Stage-váltás: won/lost stage-be lépéskor beállítja a closedAt-et. */

@@ -5,6 +5,7 @@
 
 @source "../pages";
 @source "../components";
+@source "../modules";
 
 /* `dark:` follows the theme toggle (the .dark class set by src/theme.ts),
    not the OS setting, which is Tailwind v4's default. */

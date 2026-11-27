@@ -11,6 +11,8 @@ type Props = {
   onSubmit: (values: FormValues) => void;
   onCancel?: () => void;
   onDelete?: () => void;
+  /** Plusz ellenőrzés (pl. egyediség): mezőnév → hibaüzenet. */
+  extraValidate?: (values: FormValues) => Record<string, string>;
 };
 
 const INPUT_TYPE: Record<string, string> = {
@@ -23,7 +25,14 @@ const INPUT_TYPE: Record<string, string> = {
   money: "text",
 };
 
-export function RecordForm({ fields, initialValues, onSubmit, onCancel, onDelete }: Props) {
+export function RecordForm({
+  fields,
+  initialValues,
+  onSubmit,
+  onCancel,
+  onDelete,
+  extraValidate,
+}: Props) {
   const [values, setValues] = useState<FormValues>(initialValues);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const formId = useId();
@@ -39,7 +48,7 @@ export function RecordForm({ fields, initialValues, onSubmit, onCancel, onDelete
       className="flex flex-col gap-4"
       onSubmit={(e) => {
         e.preventDefault();
-        const errs = validate(values, fields);
+        const errs = { ...extraValidate?.(values), ...validate(values, fields) };
         setErrors(errs);
         if (Object.keys(errs).length === 0) onSubmit(values);
       }}
@@ -71,6 +80,7 @@ export function RecordForm({ fields, initialValues, onSubmit, onCancel, onDelete
                   <FieldInput field={f} id={id} value={String(value ?? "")} onChange={set} />
                 </>
               )}
+              {f.hint && !error && <p className="text-muted-foreground text-xs">{f.hint}</p>}
               {error && <p className="text-destructive text-xs">{error}</p>}
             </div>
           );
@@ -161,7 +171,9 @@ function FieldInput({
             ))}
           </div>
         )}
-        <Input id={id} value={value} onChange={(e) => onChange(f.name, e.target.value)} />
+        {!f.optionsOnly && (
+          <Input id={id} value={value} onChange={(e) => onChange(f.name, e.target.value)} />
+        )}
       </div>
     );
   }
