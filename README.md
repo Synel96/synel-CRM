@@ -81,7 +81,9 @@ npm install
 npm run dev
 ```
 
-Első induláskor mintaadatokkal tölti fel magát (`seedDemoData: true`).
+Első induláskor mintaadatokkal tölti fel magát (`seedDemoData: true`). Demó
+módban egy utólag bekapcsolt bővítmény is mintaadatot kap; éles ügyfélnél
+állítsd `false`-ra, ekkor a bővítmény üresen indul.
 
 ## Új ügyfél beállítása
 

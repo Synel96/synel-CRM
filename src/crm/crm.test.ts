@@ -231,3 +231,35 @@ describe("storage és store", () => {
     expect(() => parseCrmData('{"version":1,"deals":{}}')).toThrow(/deals/);
   });
 });
+
+describe("utólag bekapcsolt bővítmény", () => {
+  const addon = {
+    id: "demo-addon",
+    name: "Demo",
+    nav: () => [],
+    emptyData: () => ({ items: [] as string[] }),
+    seed: () => ({ items: ["minta"] }),
+  };
+
+  it("demó módban meglévő adatok mellé is mintaadatot kap", async () => {
+    const adapter = memoryAdapter(createDemoData(crmConfig, NOW));
+    const store = createCrmStore(adapter, {
+      config: crmConfig,
+      addons: [addon],
+      seedDemoData: true,
+    });
+    await store.start();
+    expect(store.getState().data.addons["demo-addon"]).toEqual({ items: ["minta"] });
+  });
+
+  it("éles módban üresen indul", async () => {
+    const adapter = memoryAdapter(createDemoData(crmConfig, NOW));
+    const store = createCrmStore(adapter, {
+      config: crmConfig,
+      addons: [addon],
+      seedDemoData: false,
+    });
+    await store.start();
+    expect(store.getState().data.addons["demo-addon"]).toEqual({ items: [] });
+  });
+});

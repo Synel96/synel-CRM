@@ -46,7 +46,8 @@ export function createCrmStore(adapter: StorageAdapter, options: StoreOptions) {
     try {
       const loaded = await adapter.load();
       const data = loaded
-        ? ensureAddonData(loaded, addons, config, { seed: false })
+        ? // Utólag bekapcsolt bővítmény: demó módban mintaadatot kap, egyébként üresen indul.
+          ensureAddonData(loaded, addons, config, { seed: options.seedDemoData })
         : options.seedDemoData
           ? demoData()
           : ensureAddonData(emptyData(), addons, config, { seed: false });
