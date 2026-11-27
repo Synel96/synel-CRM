@@ -1,4 +1,4 @@
-# Hydration Starter Kit
+# Synel CRM
 
 Opinionated starter for new projects, built on [Vike](https://vike.dev),
 React 19 (SSR), Tailwind v4, and [shadcn](https://ui.shadcn.com) UI
