@@ -23,6 +23,57 @@ Tailwind v4, [shadcn](https://ui.shadcn.com) UI-elemek.
   mintaadatok visszaállítása
 - Sötét mód, mobilnézet, magyar és angol felület
 
+## Állítható modulok
+
+Minden ügyfélnél a `crm.config.ts`-ben dől el, mi látszik.
+
+### Mindig bekapcsolva
+
+| Menüpont        | Útvonal     | Mit tud                                                                                                           |
+| --------------- | ----------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Áttekintés**  | `/`         | KPI-k, pipeline fázisonként, közelgő feladatok, legutóbbi tevékenységek, bővítmény-widgetek                       |
+| **Kapcsolatok** | `/contacts` | Személyek, keresés, címkeszűrő, cégekhez kapcsolás, tevékenységnapló, bővítmény-panelek                           |
+| **Beállítások** | `/settings` | Az aktív konfiguráció (modulok, pipeline, egyedi mezők, képtárhely, bővítmények), JSON export/import, mintaadatok |
+
+### Kapcsolható modulok – `modules`
+
+| Modul         | Kulcs       | Alapból | Mit tud                                                          |
+| ------------- | ----------- | ------- | ---------------------------------------------------------------- |
+| **Cégek**     | `companies` | be      | Cégek a kapcsolataikkal és üzleteikkel, tevékenységnapló         |
+| **Üzletek**   | `deals`     | be      | Kanban pipeline; húzás vagy listás léptetés; értékek fázisonként |
+| **Feladatok** | `tasks`     | be      | Határidő, prioritás, csoportosítás (lejárt / ma / később / kész) |
+
+```ts
+modules: { companies: false, deals: true, tasks: true },
+```
+
+Kikapcsolt modul eltűnik a menüből, az áttekintésről és az űrlapokról
+(pl. kikapcsolt Cégeknél a kapcsolatoknál sincs „Cég” mező).
+
+### Bővítmények – `addons`
+
+| Bővítmény    | Kulcs         | Menüpontok                   | Mit tud                                                                                                         |
+| ------------ | ------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Ingatlan** | `real-estate` | Ingatlanok, Keresési igények | Ingatlanok kártyás nézetben, fotók (Cloudinary), tulajdonos, vevői keresések, automatikus párosítás, KPI-widget |
+
+```ts
+addons: ["real-estate"],
+```
+
+Részletek: [`modules/real-estate/README.md`](modules/real-estate/README.md).
+Új bővítmény készítése: lásd [Bővítmények](#bővítmények-add-onok).
+
+### Egyéb beállítások modulonként
+
+| Beállítás                     | Mit szab testre                                                                                | Példa                                                |
+| ----------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `labels`                      | Bármelyik menüpont neve (mag és bővítmény is)                                                  | `{ deals: "Ügyletek", properties: "Kínálat" }`       |
+| `pipeline`                    | Az Üzletek fázisai, esélyszázalékkal; `kind: "won"` / `"lost"` a lezárt fázisokhoz             | `{ id: "offer", label: "Ajánlat", probability: 60 }` |
+| `contactTags`                 | A kapcsolatok választható címkéi                                                               | `["VIP", "Partner"]`                                 |
+| `customFields`                | Egyedi mezők: `contact`, `company`, `deal`, `task`, bővítménynél pl. `property`, `buyerSearch` | lásd [Egyedi mezők](#egyedi-mezők)                   |
+| `media`                       | A képek Cloudinary-mappája                                                                     | `{ folder: "ugyfel-neve" }`                          |
+| `brand`, `locale`, `currency` | Márkanév és -szín, nyelv (`hu` / `en`), pénznem                                                | `{ name: "Ügyfél CRM" }`, `"hu"`, `"HUF"`            |
+
 ## Indítás
 
 ```sh
