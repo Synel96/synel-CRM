@@ -1,7 +1,7 @@
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { KpiCard, KpiGrid } from "@/components/crm/Page";
 import { formatMoney } from "@/src/crm/i18n";
 import type { Id } from "@/src/crm/types";
 import { rt } from "../i18n";
@@ -27,16 +27,17 @@ export function RealEstateDashboardWidget() {
     { label: rt("widget.matches"), value: String(s.matchPairs), href: "/searches" },
   ];
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <KpiGrid count={kpis.length}>
       {kpis.map((k) => (
         <a key={k.label} href={k.href} className="group">
-          <Card className="gap-1 transition-colors group-hover:border-(--crm-accent)">
-            <p className="text-muted-foreground text-xs">{k.label}</p>
-            <p className="text-xl font-semibold tabular-nums">{k.value}</p>
-          </Card>
+          <KpiCard
+            label={k.label}
+            value={k.value}
+            className="transition-colors group-hover:border-(--crm-accent)"
+          />
         </a>
       ))}
-    </div>
+    </KpiGrid>
   );
 }
 

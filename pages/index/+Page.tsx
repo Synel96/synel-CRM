@@ -1,7 +1,7 @@
 import crmConfig from "@/crm.config";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardTitle } from "@/components/ui/card";
-import { CrmPage, EmptyState } from "@/components/crm/Page";
+import { CrmPage, EmptyState, KpiCard, KpiGrid } from "@/components/crm/Page";
 import { formatDate, formatDateTime, formatMoney, t } from "@/src/crm/i18n";
 import { activeAddons } from "@/src/crm/addon-registry";
 import { dashboardStats, pipelineSummary, taskBucket } from "@/src/crm/operations";
@@ -45,14 +45,11 @@ export default function Page() {
 
   return (
     <CrmPage title={t("nav.dashboard")}>
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
+      <KpiGrid count={kpis.length}>
         {kpis.map((k) => (
-          <Card key={k.label} className="gap-1">
-            <p className="text-muted-foreground text-xs">{k.label}</p>
-            <p className="text-xl font-semibold tabular-nums">{k.value}</p>
-          </Card>
+          <KpiCard key={k.label} label={k.label} value={k.value} />
         ))}
-      </div>
+      </KpiGrid>
 
       {activeAddons().map((a) => (a.DashboardWidget ? <a.DashboardWidget key={a.id} /> : null))}
 
