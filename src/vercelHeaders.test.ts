@@ -33,6 +33,14 @@ describe("vercel.json headers", () => {
     );
   });
 
+  // Belső alkalmazás: a keresők ne indexeljék. A robots.txt-nek engednie kell
+  // a bejárást, különben a kereső nem látja ezt a fejlécet.
+  it("tells search engines not to index the app", () => {
+    expect(headerValue("/(.*)", "X-Robots-Tag")).toContain("noindex");
+    const robots = readFileSync(resolve(__dirname, "..", "public", "robots.txt"), "utf8");
+    expect(robots).not.toMatch(/^Disallow:\s*\/\s*$/m);
+  });
+
   it("caches hashed build output forever but keeps HTML revalidating", () => {
     expect(headerValue("/assets/(.*)", "Cache-Control")).toContain("immutable");
     expect(headerValue("/chunks/(.*)", "Cache-Control")).toContain("immutable");

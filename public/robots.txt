@@ -1,3 +1,9 @@
 # Belső CRM alkalmazás – nem indexelendő.
+#
+# A bejárás szándékosan engedélyezett: így a keresők látják a minden válaszon
+# ott lévő "X-Robots-Tag: noindex" fejlécet (vercel.json) és a <meta robots>
+# taget, és biztosan kihagyják az oldalt. Ha itt "Disallow: /" állna, a
+# keresők nem néznék meg az oldalt, így a noindexet sem látnák, és a cím
+# külső hivatkozás esetén tartalom nélkül megjelenhetne a találatok között.
 User-agent: *
-Disallow: /
+Allow: /

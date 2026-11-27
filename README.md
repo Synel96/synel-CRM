@@ -196,7 +196,14 @@ pages/                   ← oldalak (/, /contacts, /companies, /deals, /tasks, 
 
 **CSR:** a `pages/+config.ts`-ben `ssr: false`. Buildkor minden oldalhoz
 egy üres HTML-héj készül (`prerender`), így statikusan, szerver nélkül
-hosztolható (Vercel). Az oldal `noindex`, a `robots.txt` mindent tilt.
+hosztolható (Vercel).
+
+**Keresők:** a CRM nem indexelhető. Minden válaszon ott az `X-Robots-Tag:
+noindex, nofollow, noarchive` fejléc (`vercel.json`) és a `<meta robots>` tag.
+A `robots.txt` szándékosan engedi a bejárást, hogy a keresők lássák a tiltást
+(egy `Disallow: /` mellett nem látnák, és a cím tartalom nélkül megjelenhetne
+a találatok között). Ez nem biztonsági védelem: az adatokat a bejelentkezés
+védi, nem az, hogy a cím nem kereshető.
 
 ### Backend bekötése
 
