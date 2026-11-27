@@ -1,140 +1,157 @@
 # Synel CRM
 
-Opinionated starter for new projects, built on [Vike](https://vike.dev),
-React 19 (SSR), Tailwind v4, and [shadcn](https://ui.shadcn.com) UI
-primitives, with env validation, SEO/OG meta helpers, a flash-free dark mode
-toggle, and an SSR-safe "mounted" pattern for client-only UI.
+Újrahasznosítható CRM starter kit: egy kódbázis, amit ügyfelenként egyetlen
+konfigurációs fájllal szabsz személyre (márka, nyelv, pénznem, modulok,
+pipeline, egyedi mezők).
 
-## Getting started
+[Vike](https://vike.dev) + React 19, **kliensoldali renderelés (CSR, SSR nélkül)**,
+Tailwind v4, [shadcn](https://ui.shadcn.com) UI-elemek.
+
+## Funkciók
+
+- **Áttekintés:** KPI-k (pipeline érték, súlyozott érték, e havi nyerés,
+  lejárt feladatok), pipeline fázisonként, közelgő feladatok, legutóbbi
+  tevékenységek
+- **Kapcsolatok:** lista, ékezetfüggetlen keresés, címkeszűrő, szerkesztés,
+  tevékenységnapló (hívás, e-mail, találkozó, jegyzet)
+- **Cégek:** kapcsolódó kapcsolatokkal és üzletekkel
+- **Üzletek:** kanban tábla; a kártyák húzhatók, vagy listából léptethetők
+  (érintőképernyőn és billentyűzettel is használható)
+- **Feladatok:** csoportosítva (lejárt, ma, később, határidő nélkül, kész),
+  gyors felvétellel
+- **Beállítások:** az aktív konfiguráció áttekintése, JSON export/import,
+  mintaadatok visszaállítása
+- Sötét mód, mobilnézet, magyar és angol felület
+
+## Indítás
 
 ```sh
 npm install
-cp .env.example .env
 npm run dev
 ```
 
-## Scripts
+Első induláskor mintaadatokkal tölti fel magát (`seedDemoData: true`).
 
-| Script                 | What it does                                        |
-| ---------------------- | --------------------------------------------------- |
-| `npm run dev`          | Start the dev server                                |
-| `npm run build`        | Production build (client + SSR)                     |
-| `npm run preview`      | Build, then serve the production build locally      |
-| `npm run typecheck`    | `tsc --noEmit`                                      |
-| `npm run lint`         | ESLint over `.ts`/`.tsx`                            |
-| `npm run lint:css`     | Stylelint over `.css`                               |
-| `npm run format`       | Prettier, write mode                                |
-| `npm run format:check` | Prettier, check-only (used in CI)                   |
-| `npm run test`         | Vitest                                              |
-| `npm run check`        | Runs all of the above (typecheck → lint → test → …) |
+## Új ügyfél beállítása
 
-A pre-commit hook (Husky + lint-staged) runs ESLint/Prettier/Stylelint on
-staged files. CI (`.github/workflows/ci.yml`) runs the full `check` list plus
-a build on every push/PR.
+1. **Új repó a kitből.** Másold le a repót, vagy hozz létre belőle újat
+   (GitHub: _Use this template_), az ügyfél nevével.
+2. **`crm.config.ts`:** ez az egyetlen fájl, amit ügyfelenként módosítani kell.
 
-## Customizing for a new project
+   | Beállítás      | Mire jó                                                       |
+   | -------------- | ------------------------------------------------------------- |
+   | `brand`        | Név és kiemelőszín (`accentColor`, bármilyen CSS-szín)        |
+   | `locale`       | `"hu"` vagy `"en"`                                            |
+   | `currency`     | ISO pénznemkód, pl. `"HUF"`, `"EUR"`                          |
+   | `storageKey`   | Egyedi kulcs a böngészős tároláshoz (ügyfelenként más legyen) |
+   | `modules`      | Cégek / üzletek / feladatok ki-be kapcsolása                  |
+   | `labels`       | Modulok átnevezése, pl. `{ deals: "Projektek" }`              |
+   | `pipeline`     | Fázisok esélyszázalékkal, `kind: "won"` / `"lost"` zárással   |
+   | `contactTags`  | Választható címkék a kapcsolatokhoz                           |
+   | `customFields` | Egyedi mezők entitásonként (lásd lent)                        |
 
-When you pull this repo down as the base for a new project, go through this
-checklist:
+   A config induláskor validálódik (zod). Hibás beállításnál érthető
+   hibaüzenetet kapsz (`src/crm/config.ts`).
 
-- [ ] `package.json` — rename `"name"`
-- [ ] `.env` — set `VITE_SITE_URL`, `VITE_BRAND_NAME`, and the
-      `VITE_COMPANY_*` (address/email/phone) vars (validated by `src/env.ts`
-      via zod; the app throws on startup if these are missing/invalid)
-- [ ] `assets/logo.svg` — replace with the real logo (used in the navbar,
-      favicon, and the page-loading overlay)
-- [ ] `public/og-image.png` — replace the solid-color placeholder with real
-      Open Graph artwork (1200×630 recommended). The path is defined once as
-      `OG_IMAGE_PATH` in `components/site.ts`
-- [ ] `pages/Layout.css` / `pages/tokens.css` — brand colors (`--brand-surface`,
-      `--brand-on-surface`) and the shadcn/Tailwind design tokens
-- [ ] `components/site.ts` — `NAV_LINKS` for the navbar/footer/mobile menu
-- [ ] `pages/+Head.tsx` — JSON-LD block (`@type`, `sameAs`, etc.)
-- [ ] `public/robots.txt`, `public/sitemap.xml`, `public/llms.txt` — update
-      domain and crawling rules
-- [ ] `LICENSE` — copyright holder
-- [ ] `vercel.json` — the Content-Security-Policy only allows the site's
-      own origin by default. Add every external origin the project loads
-      _before_ going live, or the browser silently blocks it, e.g.
-      `media-src` for a Cloudinary video, `connect-src` for an API on another
-      domain, `frame-src` for an embedded Google Map. Check the browser
-      console for `Refused to ...` errors after deploying.
+3. **Logó:** cseréld le az `assets/logo.svg`-t.
+4. **Preset:** iparági kiindulópontok a `presets/` mappában. Egy preset
+   használata:
 
-## Headers & caching
+   ```ts
+   // crm.config.ts
+   export { default } from "./presets/real-estate";
+   ```
 
-`vercel.json` (Vercel ignores Netlify-style `public/_headers` files) sets:
+### Egyedi mezők
 
-- `Cache-Control: immutable` for a year on hashed build output (`/assets`,
-  `/chunks`), and `max-age=0` + a CDN revalidation window on HTML, so new
-  deploys show up immediately while JS/CSS is only downloaded once.
-- Security headers on every route: CSP, HSTS, `X-Frame-Options`,
-  `nosniff`, `Referrer-Policy`, COOP, `Permissions-Policy`.
+```ts
+customFields: {
+  deal: [
+    { key: "listingType", label: "Típus", type: "select",
+      options: ["Eladó", "Kiadó"], required: true, showInList: true },
+    { key: "areaSize", label: "Alapterület (m²)", type: "number" },
+  ],
+}
+```
 
-The CSP allows the inline theme bootstrap script by its sha256 hash (no
-`'unsafe-inline'` for scripts). If you change `THEME_BOOTSTRAP_SCRIPT`,
-update the hash; `src/vercelHeaders.test.ts` fails until you do.
+- Típusok: `text`, `textarea`, `number`, `money`, `date`, `email`, `phone`,
+  `url`, `select`, `boolean`
+- `showInList: true` esetén oszlopként (listanézet) vagy címkeként (kanban)
+  is megjelenik.
+- Az űrlapok, a validáció és a megjelenítés automatikusan generálódik.
+  A felülethez nem kell kódot írni.
 
-## Mobile nav drawer
+## Felépítés
 
-`components/ui/push-drawer.tsx` is a mobile menu that pushes the whole page
-aside (with a slight scale-down) instead of overlaying it, while the panel
-swings in with a 3D tilt and a shaded hinge edge. `pages/+Layout.tsx` owns
-the open state and wraps `<main>` + `<Footer>` in `<PushDrawerBody>`; the
-navbar stays outside so it doesn't move. Keep any other `position: fixed`
-element (e.g. a full-page background) outside `<PushDrawerBody>` too, since
-its transform while open would pin it to the page instead of the viewport.
+```
+crm.config.ts            ← ügyfél-konfiguráció
+presets/                 ← iparági preset-ek
+src/crm/
+  config.ts              ← config-séma (zod) + defineCrmConfig()
+  types.ts               ← adatmodell (Contact, Company, Deal, Task, Activity)
+  operations.ts          ← tiszta üzleti logika (CRUD, törlési szabályok, statisztika)
+  fields.ts              ← űrlapmezők generálása, konverzió, validáció
+  storage.ts             ← tároló-adapterek (localStorage, memória)
+  store.ts               ← állapot + useCrm() hook
+  seed.ts                ← mintaadatok
+  i18n.ts                ← fordítások, pénz- és dátumformázás
+  crm.test.ts            ← unit tesztek
+components/crm/          ← AppShell, EntitySheet (generikus szerkesztő), DataTable, ActivityLog
+pages/                   ← oldalak (/, /contacts, /companies, /deals, /tasks, /settings)
+```
 
-## Dark mode
+**CSR:** a `pages/+config.ts`-ben `ssr: false`. Buildkor minden oldalhoz
+egy üres HTML-héj készül (`prerender`), így statikusan, szerver nélkül
+hosztolható (Vercel). Az oldal `noindex`, a `robots.txt` mindent tilt.
 
-`src/theme.ts` + `components/ThemeToggle.tsx` implement light/dark switching:
+### Backend bekötése
 
-- A small inline script (`THEME_BOOTSTRAP_SCRIPT`, injected in `pages/+Head.tsx`)
-  runs before hydration and applies the `.dark` class based on
-  `localStorage["theme"]`, falling back to the `prefers-color-scheme` media
-  query. This avoids a flash of the wrong theme on load.
-- `ThemeToggle` reads the class the bootstrap script already applied and
-  flips it on click, persisting the choice back to `localStorage`.
-- Like the mobile nav menu, `ThemeToggle` renders a disabled placeholder
-  until `useMounted()` flips true, since the real toggle depends on
-  browser-only APIs (`localStorage`, `matchMedia`) that aren't available
-  during SSR.
+Az adatok jelenleg a böngésző `localStorage`-ában vannak, ami demóhoz és
+egyfelhasználós használatra jó. Többfelhasználós ügyfélhez írj egy adaptert
+a `StorageAdapter` interfész szerint (`src/crm/storage.ts`: `load`, `save`,
+`clear`), és cseréld le a `getCrmStore()`-ban (`src/crm/store.ts`). Az API
+címe a `VITE_API_URL` környezeti változóba kerüljön (`src/env.ts`), a
+`vercel.json` CSP `connect-src` részébe pedig vedd fel a domaint.
 
-## Vike
+## Frissítés a starter kitből
 
-This app is powered by [Vike](https://vike.dev) and [React](https://react.dev/learn).
+A repó a [hydration-starter-kit](https://github.com/Synel96/hydration-starter-kit)
+előzményeire épül. Az alap frissítései így olvaszthatók be:
 
-### Plus files
+```sh
+git remote add starter https://github.com/Synel96/hydration-starter-kit  # egyszer
+git fetch starter && git merge starter/main
+```
 
-[The + files are the interface](https://vike.dev/config) between Vike and your code.
+## Scriptek
 
-- [`+config.ts`](https://vike.dev/settings) — Settings (e.g. `<title>`)
-- [`+Page.tsx`](https://vike.dev/Page) — The `<Page>` component
-- [`+data.ts`](https://vike.dev/data) — Fetching data (for your `<Page>` component)
-- [`+Layout.tsx`](https://vike.dev/Layout) — The `<Layout>` component (wraps your `<Page>` components)
-- [`+Head.tsx`](https://vike.dev/Head) - Sets `<head>` tags
-- [`/pages/_error/+Page.tsx`](https://vike.dev/error-page) — The error page (rendered when an error occurs)
-- [`+onPageTransitionStart.ts`](https://vike.dev/onPageTransitionStart) and `+onPageTransitionEnd.ts` — For page transition animations
+| Script                 | Mit csinál                                         |
+| ---------------------- | -------------------------------------------------- |
+| `npm run dev`          | Fejlesztői szerver                                 |
+| `npm run build`        | Production build                                   |
+| `npm run preview`      | Build, majd a production build helyi kiszolgálása  |
+| `npm run typecheck`    | `tsc --noEmit`                                     |
+| `npm run lint`         | ESLint                                             |
+| `npm run lint:css`     | Stylelint                                          |
+| `npm run format`       | Prettier (írás)                                    |
+| `npm run format:check` | Prettier (csak ellenőrzés, CI)                     |
+| `npm run test`         | Vitest                                             |
+| `npm run check`        | Mind a fentiek (typecheck → lint → test → build …) |
 
-### Routing
+Commit előtt a Husky + lint-staged lefuttatja az ESLintet, a Prettiert és a
+Stylelintet. A CI (`.github/workflows/ci.yml`) minden pushnál és PR-nél a
+teljes `check`-et futtatja.
 
-[Vike's built-in router](https://vike.dev/routing) lets you choose between:
+## Sötét mód
 
-- [Filesystem Routing](https://vike.dev/filesystem-routing) (the URL of a page is determined based on where its `+Page.jsx` file is located on the filesystem)
-- [Route Strings](https://vike.dev/route-string)
-- [Route Functions](https://vike.dev/route-function)
+A `src/theme.ts` és a `components/ThemeToggle.tsx` kezeli. Egy kis inline
+script (`THEME_BOOTSTRAP_SCRIPT`) még az első renderelés előtt beállítja a
+`.dark` osztályt, így nincs villanás. A `vercel.json` CSP-je hash alapján
+engedi ezt a scriptet. Ha módosítod, frissítsd a hash-t; a
+`src/vercelHeaders.test.ts` addig hibát jelez.
 
-### SSR
+## Telepítés (Vercel)
 
-SSR is enabled by default. You can [disable it](https://vike.dev/ssr) for all or specific pages.
-
-### HTML Streaming
-
-You can [enable/disable HTML streaming](https://vike.dev/stream) for all or specific pages.
-
-### Prerendering
-
-[`prerender: true`](https://vike.dev/prerender) is set in `pages/+config.ts`,
-so `npm run build` writes static HTML for every page into `dist/client`
-(no SSR server needed at runtime). `vercel.json` deploys `dist/client` as a
-static site (`outputDirectory`); if a page needs per-request data, disable
-prerendering for it and deploy `dist/server` as a Vercel Function instead.
+A `vercel.json` statikus oldalként telepíti a `dist/client`-et, hosszú
+cache-sel a hashelt fájlokra, és biztonsági fejlécekkel (CSP, HSTS stb.).
+Külső szolgáltatás (API, képek) bekötésekor bővítsd a CSP-t.

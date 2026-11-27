@@ -1,4 +1,6 @@
 :root {
+  /* Felülírja a crm.config brand.accentColor (components/crm/AppShell.tsx) */
+  --crm-accent: oklch(0.55 0.2 260);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
