@@ -18,7 +18,7 @@ beállítja a menüneveket és az ügyletek pipeline-ját.
 | --------------- | ------------------------------------------------------------------------------------------- |
 | `/properties`   | Ingatlanok kártyás nézetben; szűrés státusz, hirdetéstípus, ingatlantípus és szöveg alapján |
 | `/searches`     | Vevői/bérlői keresési igények, a párosítások számával                                       |
-| Ingatlan-panel  | Adatok, fotók (max. 30, URL vagy feltöltés), érdeklődők, tevékenységnapló                   |
+| Ingatlan-panel  | Adatok, fotók (max. 30; Cloudinary-feltöltés vagy URL), érdeklődők, tevékenységnapló        |
 | Áttekintés      | Aktív hirdetések, eladó portfólió értéke, aktív keresések, párosítások                      |
 | Kapcsolat-panel | A kapcsolat ingatlanai és keresései, új felvétele onnan                                     |
 | Beállítások     | Ingatlanok és keresések száma                                                               |

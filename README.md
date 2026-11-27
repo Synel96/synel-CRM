@@ -131,6 +131,7 @@ src/crm/
   store.ts               ← állapot + useCrm() hook
   seed.ts                ← mintaadatok
   i18n.ts                ← fordítások, pénz- és dátumformázás
+  media.ts               ← képfeltöltés (Cloudinary / böngésző), kép-URL-ek
   addons.ts              ← bővítmény-interfész (defineAddon)
   addon-registry.ts      ← elérhető bővítmények listája
   addon-data.ts          ← bővítményadatok előkészítése, törlési hookok
@@ -152,6 +153,52 @@ a `StorageAdapter` interfész szerint (`src/crm/storage.ts`: `load`, `save`,
 `clear`), és cseréld le a `getCrmStore()`-ban (`src/crm/store.ts`). Az API
 címe a `VITE_API_URL` környezeti változóba kerüljön (`src/env.ts`), a
 `vercel.json` CSP `connect-src` részébe pedig vedd fel a domaint.
+
+## Képfeltöltés (Cloudinary)
+
+A képek (pl. ingatlanfotók) közvetlenül a böngészőből töltődnek fel a
+Cloudinary-re egy **unsigned upload preset** segítségével, titkos kulcs
+nélkül. Ha a Cloudinary nincs beállítva, a képek kicsinyítve a böngészőben
+tárolódnak (demóhoz jó, de összesen kb. 5 MB fér el).
+
+**Beállítás (ügyfelenként egyszer):**
+
+1. Cloudinary Console → **Settings → Upload → Upload presets → Add upload preset**
+   - _Signing mode:_ **Unsigned**
+   - _Asset folder:_ pl. `synel-crm` (a CRM ezen belül almappákat használ:
+     `<media.folder>/properties/<hirdetésazonosító>`)
+   - Korlátozd a presetet: _Allowed formats_ `jpg, png, webp, heic`;
+     _Max file size_ 10 MB; ajánlott _Incoming transformation_:
+     `c_limit,w_2560,h_2560`, hogy a túl nagy képek is ésszerű méretűek
+     legyenek.
+2. Környezeti változók (Vercel: _Project → Settings → Environment Variables_,
+   helyben `.env`):
+
+   ```sh
+   VITE_CLOUDINARY_CLOUD_NAME=<cloud name>
+   VITE_CLOUDINARY_UPLOAD_PRESET=<preset neve>
+   ```
+
+3. `crm.config.ts` → `media: { folder: "<ügyfél>" }`
+4. Új build / deploy (a `VITE_*` értékek buildkor kerülnek a kódba).
+
+A `vercel.json` CSP-je már engedi az `https://api.cloudinary.com` felé
+irányuló feltöltést, a megjelenítés pedig Cloudinary-transzformációkkal
+történik (`f_auto,q_auto`, a kártyákon kicsinyítve; `src/crm/media.ts` →
+`imageUrl()`).
+
+**Biztonság – fontos:**
+
+- Az **API secretet soha ne tedd** `VITE_*` változóba vagy a kódba: az a
+  böngészőbe kerülne. Unsigned módban nincs is rá szükség.
+- Az unsigned preset neve a böngészőben látható, így bárki, aki ismeri,
+  tölthet fel vele. Ezért korlátozd a presetet (formátum, méret, mappa).
+  Ha a CRM később bejelentkezést és backendet kap, érdemes **signed**
+  feltöltésre váltani: a backend írja alá a kérést, a felület pedig
+  ugyanaz marad (`ImageUploader` interfész a `src/crm/media.ts`-ben).
+- Ha egy fotót a CRM-ből törölsz, az a Cloudinary-n megmarad, mert a
+  törléshez API secret kell. A `publicId` minden fotónál el van mentve,
+  így ezek később backendből takaríthatók.
 
 ## Frissítés a starter kitből
 

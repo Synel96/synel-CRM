@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { CrmPage } from "@/components/crm/Page";
 import { activeAddons } from "@/src/crm/addon-registry";
+import { getImageUploader } from "@/src/crm/media";
+import { env } from "@/src/env";
 import { t, type MessageKey } from "@/src/crm/i18n";
 import { parseCrmData } from "@/src/crm/storage";
 import { useCrm } from "@/src/crm/store";
@@ -102,6 +104,19 @@ export default function Page() {
               </ul>
             )}
             {row(
+              t("settings.media"),
+              getImageUploader().provider === "cloudinary" ? (
+                <span>
+                  Cloudinary{" "}
+                  <span className="text-muted-foreground">
+                    · {env.VITE_CLOUDINARY_CLOUD_NAME} · /{c.media.folder}
+                  </span>
+                </span>
+              ) : (
+                t("settings.mediaLocal")
+              )
+            )}
+            {row(
               t("settings.addons"),
               activeAddons().length === 0 ? (
                 t("common.none")
@@ -131,7 +146,7 @@ export default function Page() {
               </li>
             ))}
             {activeAddons().flatMap((a) =>
-              (a.summary?.(data.addons[a.id]) ?? []).map((s) => (
+              (a.summary?.(data.addons[a.id] ?? a.emptyData()) ?? []).map((s) => (
                 <li key={`${a.id}.${s.label}`} className="bg-muted/50 rounded-lg px-3 py-2">
                   <span className="block text-lg font-semibold tabular-nums">{s.count}</span>
                   <span className="text-muted-foreground text-xs">{s.label}</span>

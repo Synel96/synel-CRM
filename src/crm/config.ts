@@ -61,6 +61,15 @@ export const crmConfigSchema = z
     currency: z.string().length(3).default("HUF"),
     /** A localStorage-kulcs – ügyfelenként legyen egyedi. */
     storageKey: z.string().min(1).default("crm-data"),
+    /** Képfeltöltés: a Cloudinary-n ebbe a (gyökér)mappába kerülnek a képek. */
+    media: z
+      .object({
+        folder: z
+          .string()
+          .regex(/^[0-9A-Za-z_-]+(\/[0-9A-Za-z_-]+)*$/)
+          .default("crm"),
+      })
+      .default({ folder: "crm" }),
     /** Induláskor mintaadatokkal töltse-e fel az üres adatbázist. */
     seedDemoData: z.boolean().default(true),
     modules: z

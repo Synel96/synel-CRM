@@ -25,6 +25,14 @@ describe("vercel.json headers", () => {
     expect(headerValue("/(.*)", "Content-Security-Policy")).toContain(`'sha256-${hash}'`);
   });
 
+  // A képek közvetlenül a böngészőből mennek a Cloudinary upload API-ra
+  // (src/crm/media.ts); a CSP nélküle csendben blokkolná a feltöltést.
+  it("allows uploads to the Cloudinary API", () => {
+    expect(headerValue("/(.*)", "Content-Security-Policy")).toMatch(
+      /connect-src [^;]*https:\/\/api\.cloudinary\.com/
+    );
+  });
+
   it("caches hashed build output forever but keeps HTML revalidating", () => {
     expect(headerValue("/assets/(.*)", "Cache-Control")).toContain("immutable");
     expect(headerValue("/chunks/(.*)", "Cache-Control")).toContain("immutable");

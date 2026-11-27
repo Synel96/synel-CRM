@@ -1,5 +1,6 @@
 import { BedDoubleIcon, HouseIcon, MapPinIcon, RulerIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { imageUrl } from "@/src/crm/media";
 import { rt } from "../i18n";
 import { formatPrice } from "../format";
 import { shortAddress } from "../logic";
@@ -34,7 +35,7 @@ export function PropertyCard({ property: p, matchCount, onOpen }: Props) {
         <div className="bg-muted relative aspect-[16/10] overflow-hidden">
           {cover ? (
             <img
-              src={cover.url}
+              src={imageUrl(cover.url, { width: 640, height: 400 })}
               alt={cover.caption || p.title}
               loading="lazy"
               className="size-full object-cover transition-transform duration-300 group-hover:scale-105"

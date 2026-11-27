@@ -47,9 +47,13 @@ export const MAX_PHOTOS = 30;
 
 export interface PropertyPhoto {
   id: string;
-  /** https URL vagy (feltöltésnél) kicsinyített data: URL. */
+  /** https URL (Cloudinary vagy külső) vagy helyi tárolásnál data: URL. */
   url: string;
   caption: string;
+  /** Cloudinary public_id – később törléshez / portálszinkronhoz. */
+  publicId?: string | null;
+  width?: number | null;
+  height?: number | null;
 }
 
 export interface Property extends BaseRecord {

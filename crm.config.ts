@@ -16,6 +16,9 @@ export default defineCrmConfig({
   storageKey: "synel-crm",
   seedDemoData: true,
 
+  // Képek Cloudinary-mappája (a hozzáférés a .env-ben: VITE_CLOUDINARY_*)
+  media: { folder: "synel-crm" },
+
   modules: { companies: true, deals: true, tasks: true },
 
   // Bővítmények (lásd src/crm/addon-registry.ts), pl. ["real-estate"]

@@ -14,6 +14,7 @@ export default defineCrmConfig({
   currency: "HUF",
   storageKey: "real-estate-crm",
   seedDemoData: true,
+  media: { folder: "real-estate-crm" },
   addons: ["real-estate"],
   modules: { companies: false, deals: true, tasks: true },
   labels: { contacts: "Ügyfelek", deals: "Ügyletek" },

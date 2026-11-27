@@ -11,6 +11,7 @@ import { ActivityLog } from "@/components/crm/ActivityLog";
 import { RecordForm } from "@/components/crm/RecordForm";
 import { fromFormValues, toFormValues } from "@/src/crm/fields";
 import { formatMoney, t } from "@/src/crm/i18n";
+import { folderSegment } from "@/src/crm/media";
 import { contactName } from "@/src/crm/operations";
 import type { Id } from "@/src/crm/types";
 import { propertyFields } from "../fields";
@@ -22,7 +23,7 @@ import {
   saveProperty,
   validateOwnId,
 } from "../logic";
-import type { Property } from "../types";
+import { MAX_PHOTOS, type Property } from "../types";
 import { useRealEstate } from "../useRealEstate";
 import { PhotoManager } from "./PhotoManager";
 
@@ -101,8 +102,21 @@ export function PropertySheet({ target, onClose }: Props) {
               <>
                 <PhotoManager
                   photos={property.photos}
+                  folder={`${crmConfig.media.folder}/properties/${folderSegment(property.ownId)}`}
+                  onAdd={(photos) =>
+                    // A legfrissebb adatra fűzünk, így a párhuzamos feltöltések nem vesznek el.
+                    update((d) => {
+                      const current = d.properties.find((p) => p.id === property.id);
+                      if (!current) return d;
+                      const next = [...current.photos, ...photos].slice(0, MAX_PHOTOS);
+                      return saveProperty(d, { ...current, photos: next }, current.id).data;
+                    })
+                  }
                   onChange={(photos) =>
-                    update((d) => saveProperty(d, { ...property, photos }, property.id).data)
+                    update((d) => {
+                      const current = d.properties.find((p) => p.id === property.id);
+                      return current ? saveProperty(d, { ...current, photos }, current.id).data : d;
+                    })
                   }
                 />
                 <Interested property={property} />
