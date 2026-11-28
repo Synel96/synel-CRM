@@ -52,15 +52,16 @@ Kikapcsolt modul eltűnik a menüből, az áttekintésről és az űrlapokról
 
 ### Bővítmények – `addons`
 
-| Bővítmény          | Kulcs          | Menüpontok                       | Mit tud                                                                                                           |
-| ------------------ | -------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| **Ingatlan**       | `real-estate`  | Ingatlanok, Keresési igények     | Ingatlanok kártyás nézetben, fotók (Cloudinary), tulajdonos, vevői keresések, automatikus párosítás, KPI-widget   |
-| **Szolgáltatások** | `services`     | Szolgáltatások (Tartalomkezelés) | Név, rövid/részletes leírás, ár + megjegyzés („-tól”, „/hó”), kép, URL, SEO, publikálás, sorrend, kiemelés        |
-| **Vélemények**     | `testimonials` | Vélemények (Tartalomkezelés)     | Név, cég, 1–5 csillag, szöveg, forrás, kép; kapcsolathoz és szolgáltatáshoz köthető; átlagértékelés               |
-| **Blog**           | `blog`         | Blog (Tartalomkezelés)           | Markdown-szerkesztő előnézettel, kivonat, címkék, szerző, olvasási idő, időzített publikálás, képek alt szöveggel |
+| Bővítmény          | Kulcs          | Menüpontok                       | Mit tud                                                                                                                                                                            |
+| ------------------ | -------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Ingatlan**       | `real-estate`  | Ingatlanok, Keresési igények     | Ingatlanok kártyás nézetben, fotók (Cloudinary), tulajdonos, vevői keresések, automatikus párosítás, KPI-widget                                                                    |
+| **Szolgáltatások** | `services`     | Szolgáltatások (Tartalomkezelés) | Név, rövid/részletes leírás, ár + megjegyzés („-tól”, „/hó”), kép, URL, SEO, publikálás, sorrend, kiemelés                                                                         |
+| **Projektek**      | `projects`     | Projektek (Tartalomkezelés)      | Referenciák: galéria (borító + képek alt szöveggel), Markdown-esettanulmány, ügyfél, cég/kapcsolat, év, kategória, technológiák, élő link, kapcsolódó szolgáltatások és vélemények |
+| **Vélemények**     | `testimonials` | Vélemények (Tartalomkezelés)     | Név, cég, 1–5 csillag, szöveg, forrás, kép; kapcsolathoz és szolgáltatáshoz köthető; átlagértékelés                                                                                |
+| **Blog**           | `blog`         | Blog (Tartalomkezelés)           | Markdown-szerkesztő előnézettel, kivonat, címkék, szerző, olvasási idő, időzített publikálás, képek alt szöveggel                                                                  |
 
 ```ts
-addons: ["real-estate", "services", "testimonials", "blog"],
+addons: ["real-estate", "services", "projects", "testimonials", "blog"],
 ```
 
 Részletek: [`modules/real-estate/README.md`](modules/real-estate/README.md).
@@ -195,6 +196,7 @@ adatokkal, oldalakkal, menüpontokkal, áttekintő widgettel és kapcsolatpanell
 | -------------- | ----------------------- | --------------------------------------------------------- |
 | `real-estate`  | `modules/real-estate/`  | Ingatlanok, fotók, vevői keresések, automatikus párosítás |
 | `services`     | `modules/services/`     | Szolgáltatások (tartalommotor)                            |
+| `projects`     | `modules/projects/`     | Projektek / referenciák (tartalommotor)                   |
 | `testimonials` | `modules/testimonials/` | Vélemények (tartalommotor)                                |
 | `blog`         | `modules/blog/`         | Blog Markdown-szerkesztővel (tartalommotor)               |
 
@@ -211,7 +213,7 @@ csoportnevek átírhatók, pl. `labels: { "group.content": "Weboldal" }`.
 ### Tartalmi bővítmények (közös tartalommotor)
 
 A weboldal tartalmát kezelő bővítmények (szolgáltatások, vélemények, és a
-tervezett projektek, blog, galéria) egy közös motorra épülnek
+projektek, blog és a tervezett galéria) egy közös motorra épülnek
 (`src/crm/content/`, `components/crm/content/`). Minden elem kapja:
 
 - **státusz:** vázlat vagy publikált; a weboldal csak a publikáltat kapja meg.

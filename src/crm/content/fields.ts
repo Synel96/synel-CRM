@@ -63,3 +63,14 @@ export function contentFields(
       : []),
   ];
 }
+
+/**
+ * Egy másik tartalmi bővítmény elemei választólistaként (pl. a projekthez
+ * kapcsolódó szolgáltatások). Ha a bővítmény nincs bekapcsolva, üres lista.
+ */
+export function contentOptions(core: CrmData, addonId: string) {
+  const data = core.addons[addonId] as { items?: ContentItem[] } | undefined;
+  return [...(data?.items ?? [])]
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((i) => ({ value: i.id, label: i.title }));
+}

@@ -6,7 +6,8 @@
  */
 import { MessageSquareQuoteIcon } from "lucide-react";
 import crmConfig from "@/crm.config";
-import type { ContentData, ContentItem } from "@/src/crm/content/logic";
+import { contentOptions } from "@/src/crm/content/fields";
+import type { ContentItem } from "@/src/crm/content/logic";
 import type { ContentTypeDef } from "@/src/crm/content/types";
 import { formatDate } from "@/src/crm/i18n";
 import { contactName } from "@/src/crm/operations";
@@ -27,6 +28,7 @@ export const L = hu
       sourceUrl: "Link az eredetihez",
       contact: "Kapcsolat a CRM-ben",
       service: "Kapcsolódó szolgáltatás",
+      project: "Kapcsolódó projekt",
       average: "átlag",
       panel: "Vélemények",
       add: "Új vélemény",
@@ -44,6 +46,7 @@ export const L = hu
       sourceUrl: "Link to original",
       contact: "Contact in CRM",
       service: "Related service",
+      project: "Related project",
       average: "avg",
       panel: "Testimonials",
       add: "New testimonial",
@@ -52,10 +55,8 @@ export const L = hu
 
 export const rating = (i: ContentItem) => (typeof i.rating === "number" ? i.rating : 0);
 
-function serviceOptions(core: CrmData) {
-  const services = core.addons.services as ContentData | undefined;
-  return (services?.items ?? []).map((s) => ({ value: s.id, label: s.title }));
-}
+const serviceOptions = (core: CrmData) => contentOptions(core, "services");
+const projectOptions = (core: CrmData) => contentOptions(core, "projects");
 
 export const testimonialsDef: ContentTypeDef = {
   addonId: "testimonials",
@@ -67,6 +68,7 @@ export const testimonialsDef: ContentTypeDef = {
   defaults: () => ({ rating: 5, date: new Date().toISOString().slice(0, 10) }),
   fields: (core) => {
     const services = serviceOptions(core);
+    const projects = projectOptions(core);
     return [
       { name: "authorRole", label: L.role, type: "text", required: false },
       {
@@ -106,6 +108,17 @@ export const testimonialsDef: ContentTypeDef = {
             },
           ]
         : []),
+      ...(projects.length
+        ? [
+            {
+              name: "projectId",
+              label: L.project,
+              type: "relation" as const,
+              required: false,
+              options: projects,
+            },
+          ]
+        : []),
     ];
   },
   // A select szöveget ad vissza – az értékelés számként tárolódik.
@@ -138,6 +151,7 @@ export const testimonialsDef: ContentTypeDef = {
       : items,
   seed: (core) => {
     const services = serviceOptions(core);
+    const projects = projectOptions(core);
     const c = (n: number) => core.contacts[n % Math.max(1, core.contacts.length)];
     const person = (n: number) => (c(n) ? contactName(c(n), crmConfig.locale) : "Ügyfél");
     return [
@@ -152,6 +166,7 @@ export const testimonialsDef: ContentTypeDef = {
         source: "Google",
         contactId: c(0)?.id ?? null,
         serviceId: services[0]?.value ?? null,
+        projectId: projects[0]?.value ?? null,
         status: "published",
         featured: true,
       },

@@ -22,7 +22,7 @@ export default defineCrmConfig({
   modules: { companies: true, deals: true, tasks: true },
 
   // Bővítmények (lásd src/crm/addon-registry.ts), pl. ["real-estate"]
-  addons: ["real-estate", "services", "testimonials", "blog"],
+  addons: ["real-estate", "services", "projects", "testimonials", "blog"],
 
   // Menüpontok átnevezése, pl. { deals: "Projektek" }
   labels: {},
