@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CARD_IDS, KPI_IDS } from "./dashboard";
 import { INDUSTRY_IDS, mergeWithIndustry } from "./industries";
 
 /*
@@ -105,6 +106,24 @@ export const crmConfigSchema = z
      * Hogy egy bővítmény mit fogad el, a saját README-je írja le.
      */
     addonSettings: z.record(z.string(), z.record(z.string(), z.unknown())).default({}),
+    /**
+     * Az Áttekintés: mely számok és kártyák, milyen sorrendben (src/crm/dashboard.ts).
+     * Az üzlettípus-profil adja; bármelyik kulcs felülírható.
+     */
+    dashboard: z
+      .object({
+        kpis: z.array(z.enum(KPI_IDS)).optional(),
+        cards: z.array(z.enum(CARD_IDS)).optional(),
+        /** A bővítmények widgetjei (pl. ingatlanok) a mag számai elé kerüljenek. */
+        addonsFirst: z.boolean().default(false),
+        /** Időpontos üzleteknél (pl. rendezvények) az egyedi dátummező kulcsa. */
+        dealDateField: z.string().optional(),
+        /** Ezeknél összegzendő szám-mező (pl. vendégek száma). */
+        dealSumField: z.string().optional(),
+        /** „Közelgő” = a következő ennyi nap. */
+        horizonDays: z.number().int().positive().default(30),
+      })
+      .default({ addonsFirst: false, horizonDays: 30 }),
     pipeline: z.array(stageSchema).min(2),
     contactTags: z.array(z.string().min(1)).default([]),
     customFields: z

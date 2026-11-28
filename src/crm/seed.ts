@@ -27,11 +27,22 @@ const PEOPLE = [
   ["Dávid", "Molnár", "Tulajdonos"],
 ] as const;
 
-function demoCustomValues(fields: CustomFieldDef[], i: number): CustomValues {
+/**
+ * Mintaértékek az egyedi mezőkhöz: select → az opciók sorban, boolean →
+ * váltakozva, szám → 12, 18, 24…, dátum → a következő hetekre szórva (pl.
+ * rendezvény dátuma), így az időpont-alapú Áttekintés is mutat valamit.
+ */
+function demoCustomValues(fields: CustomFieldDef[], i: number, now = new Date()): CustomValues {
   const out: CustomValues = {};
   for (const f of fields) {
     if (f.type === "select" && f.options?.length) out[f.key] = f.options[i % f.options.length];
     else if (f.type === "boolean") out[f.key] = i % 2 === 0;
+    else if (f.type === "number") out[f.key] = 12 + i * 6;
+    else if (f.type === "date") {
+      const d = new Date(now);
+      d.setDate(d.getDate() + 3 + i * 5);
+      out[f.key] = toDateKey(d);
+    }
   }
   return out;
 }
@@ -79,7 +90,7 @@ export function createDemoData(config: CrmConfig, now = new Date()): CrmData {
   const stages = config.pipeline;
   // Az üzletek és feladatok szövege az üzlettípus-profilból jön (src/crm/industries.ts).
   const demo = industryOf(config.industry).demo;
-  const dealIds = demo.deals.map(([title, value], i) => {
+  const dealIds = demo.deals.map(([title, value, demoCustom], i) => {
     const stage = stages[i % stages.length];
     const res = createRecord(data, "deals", {
       title,
@@ -90,7 +101,7 @@ export function createDemoData(config: CrmConfig, now = new Date()): CrmData {
       expectedCloseDate: toDateKey(day(7 * (i + 1))),
       closedAt: stage.kind === "open" ? null : day(-i).toISOString(),
       notes: "",
-      custom: demoCustomValues(config.customFields.deal, i),
+      custom: { ...demoCustomValues(config.customFields.deal, i, now), ...demoCustom },
     });
     data = res.data;
     return res.record.id;

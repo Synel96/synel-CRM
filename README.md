@@ -51,6 +51,23 @@ export default defineCrmConfig({
 `addonSettings` kulcsonként fésülődik. A `customFields` entitásonként: ha
 megadsz `deal` mezőket, azok cserélik a profiléit, a többi entitásé marad.
 
+**Áttekintés profilonként:** a profil azt is megadja, mely számok és
+kártyák jelenjenek meg az Áttekintésen, és milyen sorrendben (`dashboard`,
+`src/crm/dashboard.ts`). A vendéglátásnál elöl a „Rendezvények – következő
+30 nap”, a „Vendégek száma (30 nap)” és a „Közelgő rendezvények” lista van.
+Ezek egy egyedi dátum- és számmezőből számolnak (`dealDateField`,
+`dealSumField`). Az ingatlanirodánál az ingatlanos számok kerülnek előre
+(`addonsFirst`). A feliratok a menüneveket és a fázisokat követik (pl.
+„Megtartva (e hónap)”, „Rendezvények fázisonként”). Felülírás:
+
+```ts
+dashboard: {
+  kpis: ["upcomingDeals", "upcomingSum", "openDeals", "overdueTasks"],
+  cards: ["upcomingDeals", "tasks", "activity"],
+  horizonDays: 14,
+},
+```
+
 **Új üzlettípus:** egy új profil a `src/crm/industries.ts`-ben, és ha kell,
 hozzá tartozó bővítmények a `modules/` alá. Kész ügyfél-példák: `presets/`
 (`real-estate.ts`, `hospitality.ts`).
@@ -107,6 +124,7 @@ Részletek: [`modules/real-estate/README.md`](modules/real-estate/README.md).
 | Beállítás                     | Mit szab testre                                                                                | Példa                                                |
 | ----------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
 | `industry`                    | Üzlettípus-profil (lásd fent)                                                                  | `"hospitality"`                                      |
+| `dashboard`                   | Az Áttekintés számai és kártyái (lásd az üzlettípusnál)                                        | `{ kpis: [...], cards: [...] }`                      |
 | `addonSettings`               | Bővítményenkénti beállítás                                                                     | `{ menu: { sections: ["Levesek", "Pizzák"] } }`      |
 | `labels`                      | Bármelyik menüpont és menücsoport neve (mag és bővítmény is)                                   | `{ deals: "Ügyletek", properties: "Kínálat" }`       |
 | `pipeline`                    | Az Üzletek fázisai, esélyszázalékkal; `kind: "won"` / `"lost"` a lezárt fázisokhoz             | `{ id: "offer", label: "Ajánlat", probability: 60 }` |

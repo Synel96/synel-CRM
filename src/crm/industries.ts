@@ -14,7 +14,14 @@ export type IndustryId = (typeof INDUSTRY_IDS)[number];
 
 type ProfileDefaults = Pick<
   CrmConfigInput,
-  "modules" | "addons" | "labels" | "pipeline" | "contactTags" | "customFields" | "addonSettings"
+  | "modules"
+  | "addons"
+  | "labels"
+  | "pipeline"
+  | "contactTags"
+  | "customFields"
+  | "addonSettings"
+  | "dashboard"
 >;
 
 export type IndustryProfile = {
@@ -24,7 +31,8 @@ export type IndustryProfile = {
   defaults: ProfileDefaults;
   /** Mintaadatok a mag moduljaihoz (üzletek, feladatok, tevékenységek szövege). */
   demo: {
-    deals: [string, number][];
+    /** Üzletek: [cím, érték, egyedi mezők (opcionális, pl. vendégszám)] */
+    deals: [string, number, Record<string, string | number>?][];
     tasks: string[];
     activities?: [string, string, string, string];
   };
@@ -98,6 +106,10 @@ export const INDUSTRIES: Record<IndustryId, IndustryProfile> = {
         { id: "won", label: "Megrendelve", probability: 100, kind: "won" },
         { id: "lost", label: "Elvesztett", probability: 0, kind: "lost" },
       ],
+      dashboard: {
+        kpis: ["openDeals", "pipelineValue", "weightedValue", "wonThisMonth", "overdueTasks"],
+        cards: ["pipeline", "tasks", "activity"],
+      },
       contactTags: ["Partner", "VIP", "Ajánlásból", "Karbantartási szerződés"],
       customFields: {
         contact: [sources("Rendezvény")],
@@ -155,6 +167,11 @@ export const INDUSTRIES: Record<IndustryId, IndustryProfile> = {
         { id: "closed", label: "Adásvétel / bérleti szerződés", probability: 100, kind: "won" },
         { id: "failed", label: "Meghiúsult", probability: 0, kind: "lost" },
       ],
+      dashboard: {
+        addonsFirst: true,
+        kpis: ["openDeals", "wonThisMonth", "overdueTasks", "contacts"],
+        cards: ["tasks", "activity", "pipeline"],
+      },
       contactTags: ["Eladó", "Vevő", "Bérlő", "Bérbeadó", "Befektető"],
       customFields: {
         contact: [sources("ingatlan.com", "Tábla")],
@@ -202,6 +219,12 @@ export const INDUSTRIES: Record<IndustryId, IndustryProfile> = {
         { id: "held", label: "Megtartva", probability: 100, kind: "won" },
         { id: "cancelled", label: "Lemondva", probability: 0, kind: "lost" },
       ],
+      dashboard: {
+        dealDateField: "eventDate",
+        dealSumField: "guests",
+        kpis: ["upcomingDeals", "upcomingSum", "openDeals", "wonThisMonth", "overdueTasks"],
+        cards: ["upcomingDeals", "tasks", "activity", "pipeline"],
+      },
       contactTags: ["Törzsvendég", "Céges", "Rendezvényszervező", "Ételallergia"],
       customFields: {
         contact: [
@@ -223,14 +246,14 @@ export const INDUSTRIES: Record<IndustryId, IndustryProfile> = {
     },
     demo: {
       deals: [
-        ["Céges évzáró vacsora – 40 fő", 680_000],
-        ["Esküvői vacsora – 80 fő", 2_400_000],
-        ["Születésnapi ebéd – 15 fő", 180_000],
-        ["Konferencia-ebéd – 60 fő", 720_000],
-        ["Karácsonyi céges buli", 950_000],
-        ["Ballagási ebéd", 260_000],
-        ["Eljegyzési vacsora", 140_000],
-        ["Csapatépítő főzőkurzus", 390_000],
+        ["Céges évzáró vacsora – 40 fő", 680_000, { guests: 40 }],
+        ["Esküvői vacsora – 80 fő", 2_400_000, { guests: 80 }],
+        ["Születésnapi ebéd – 15 fő", 180_000, { guests: 15 }],
+        ["Konferencia-ebéd – 60 fő", 720_000, { guests: 60 }],
+        ["Karácsonyi céges buli", 950_000, { guests: 55 }],
+        ["Ballagási ebéd", 260_000, { guests: 22 }],
+        ["Eljegyzési vacsora", 140_000, { guests: 12 }],
+        ["Csapatépítő főzőkurzus", 390_000, { guests: 18 }],
       ],
       tasks: [
         "Menüajánlat küldése az évzáróhoz",
@@ -255,7 +278,7 @@ export const industryOf = (id: string | undefined): IndustryProfile =>
 /**
  * A profil alapértelmezései + az ügyfél configja. Szabályok:
  * - egyszerű értékek, `addons`, `pipeline`, `contactTags`: az ügyfélé nyer;
- * - `modules`, `labels`, `addonSettings`: kulcsonként összefésülve;
+ * - `modules`, `labels`, `addonSettings`, `dashboard`: kulcsonként összefésülve;
  * - `customFields`: entitásonként (pl. ha az ügyfél ad `deal` mezőket, azok
  *   cserélik a profil `deal` mezőit, a többi entitásé marad).
  */
@@ -268,6 +291,7 @@ export function mergeWithIndustry(input: ClientConfigInput): CrmConfigInput {
     modules: { ...d.modules, ...input.modules } as CrmConfigInput["modules"],
     labels: { ...d.labels, ...input.labels },
     addonSettings: { ...d.addonSettings, ...input.addonSettings },
+    dashboard: { ...d.dashboard, ...input.dashboard } as CrmConfigInput["dashboard"],
     customFields: { ...d.customFields, ...input.customFields } as CrmConfigInput["customFields"],
     addons: input.addons ?? d.addons,
     contactTags: input.contactTags ?? d.contactTags,
