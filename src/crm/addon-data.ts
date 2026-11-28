@@ -16,7 +16,10 @@ export function ensureAddonData(
   for (const a of addons) {
     const raw = next[a.id];
     if (raw === undefined) {
-      next[a.id] = seed && a.seed ? a.seed(data, config) : a.emptyData();
+      // A seed a korábban előkészített bővítmények adatait is látja (pl. egy
+      // vélemény hivatkozhat egy szolgáltatásra) – a registry sorrendje számít.
+      next[a.id] =
+        seed && a.seed ? a.seed({ ...data, addons: { ...next } }, config) : a.emptyData();
     } else if (a.normalize) {
       next[a.id] = a.normalize(raw);
     }

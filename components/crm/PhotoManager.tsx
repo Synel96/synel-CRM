@@ -9,28 +9,30 @@ import {
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { t } from "@/src/crm/i18n";
-import { getImageUploader, imageUrl, UploadError } from "@/src/crm/media";
+import { t, type MessageKey } from "@/src/crm/i18n";
+import { getImageUploader, imageUrl, UploadError, type MediaImage } from "@/src/crm/media";
 import { newId } from "@/src/crm/operations";
-import { rt, type ReKey } from "../i18n";
-import { MAX_PHOTOS, type PropertyPhoto } from "../types";
 
 type Props = {
-  photos: PropertyPhoto[];
+  photos: MediaImage[];
+  /** Legfeljebb ennyi kép (alap: 30 – az ingatlan.com korlátja). */
+  max?: number;
+  /** A szakasz címe (alap: „Képek”). */
+  title?: string;
   /** Cloudinary mappa ehhez az ingatlanhoz. */
   folder: string;
   /**
    * Új képek hozzáfűzése. Funkcionálisan, a mindenkori legfrissebb adatra
    * kell alkalmazni (párhuzamos feltöltések ne írják felül egymást).
    */
-  onAdd: (photos: PropertyPhoto[]) => void;
+  onAdd: (photos: MediaImage[]) => void;
   /** Sorrend, felirat, törlés. */
-  onChange: (photos: PropertyPhoto[]) => void;
+  onChange: (photos: MediaImage[]) => void;
 };
 
 type Pending = { id: string; name: string; progress: number; error?: string };
 
-const ERROR_KEY: Record<UploadError["code"], ReKey> = {
+const ERROR_KEY: Record<UploadError["code"], MessageKey> = {
   "not-image": "photos.readError",
   "too-large": "photos.tooLarge",
   network: "photos.networkError",
@@ -38,14 +40,14 @@ const ERROR_KEY: Record<UploadError["code"], ReKey> = {
   aborted: "photos.aborted",
 };
 
-export function PhotoManager({ photos, folder, onAdd, onChange }: Props) {
+export function PhotoManager({ photos, max = 30, title, folder, onAdd, onChange }: Props) {
   const [url, setUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<Pending[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
   const uploader = getImageUploader();
   const uploading = pending.filter((p) => !p.error).length;
-  const room = MAX_PHOTOS - photos.length - uploading;
+  const room = max - photos.length - uploading;
   const full = room <= 0;
 
   const patchPending = (id: string, patch: Partial<Pending>) =>
@@ -53,7 +55,7 @@ export function PhotoManager({ photos, folder, onAdd, onChange }: Props) {
 
   async function uploadFiles(files: File[]) {
     setError(null);
-    if (files.length > room) setError(rt("photos.max"));
+    if (files.length > room) setError(t("photos.max"));
     const batch = files.slice(0, Math.max(0, room)).map((file) => ({ file, id: newId() }));
     setPending((list) => [
       ...list,
@@ -82,7 +84,7 @@ export function PhotoManager({ photos, folder, onAdd, onChange }: Props) {
           const code = err instanceof UploadError ? err.code : "rejected";
           const detail =
             err instanceof UploadError && code === "rejected" ? `: ${err.message}` : "";
-          patchPending(id, { error: rt(ERROR_KEY[code]) + detail });
+          patchPending(id, { error: t(ERROR_KEY[code]) + detail });
         }
       })
     );
@@ -98,9 +100,9 @@ export function PhotoManager({ photos, folder, onAdd, onChange }: Props) {
     <section className="flex flex-col gap-3 border-t pt-4">
       <h3 className="flex items-center justify-between gap-2 text-sm font-semibold">
         <span>
-          {rt("photos.title")}{" "}
+          {title ?? t("photos.title")}{" "}
           <span className="text-muted-foreground font-normal">
-            ({photos.length}/{MAX_PHOTOS})
+            ({photos.length}/{max})
           </span>
         </span>
         {uploader.provider === "cloudinary" && (
@@ -115,7 +117,7 @@ export function PhotoManager({ photos, folder, onAdd, onChange }: Props) {
         onSubmit={(e) => {
           e.preventDefault();
           const value = url.trim();
-          if (!/^https:\/\/\S+$/i.test(value)) return setError(rt("photos.invalidUrl"));
+          if (!/^https:\/\/\S+$/i.test(value)) return setError(t("photos.invalidUrl"));
           setError(null);
           onAdd([{ id: newId(), url: value, caption: "" }]);
           setUrl("");
@@ -125,13 +127,13 @@ export function PhotoManager({ photos, folder, onAdd, onChange }: Props) {
           type="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder={rt("photos.urlPlaceholder")}
-          aria-label={rt("photos.urlPlaceholder")}
+          placeholder={t("photos.urlPlaceholder")}
+          aria-label={t("photos.urlPlaceholder")}
           disabled={full}
         />
         <div className="flex gap-2">
           <Button type="submit" variant="outline" disabled={full || !url.trim()}>
-            {rt("photos.add")}
+            {t("photos.add")}
           </Button>
           <Button
             type="button"
@@ -139,7 +141,7 @@ export function PhotoManager({ photos, folder, onAdd, onChange }: Props) {
             disabled={full}
             onClick={() => fileRef.current?.click()}
           >
-            <ImagePlusIcon /> {rt("photos.upload")}
+            <ImagePlusIcon /> {t("photos.upload")}
           </Button>
         </div>
         <input
@@ -148,7 +150,7 @@ export function PhotoManager({ photos, folder, onAdd, onChange }: Props) {
           accept="image/*"
           multiple
           className="hidden"
-          aria-label={rt("photos.upload")}
+          aria-label={t("photos.upload")}
           onChange={(e) => {
             const files = Array.from(e.target.files ?? []);
             e.target.value = "";
@@ -157,7 +159,7 @@ export function PhotoManager({ photos, folder, onAdd, onChange }: Props) {
         />
       </form>
       {uploader.provider === "local" && (
-        <p className="text-muted-foreground text-xs">{rt("photos.storageHint")}</p>
+        <p className="text-muted-foreground text-xs">{t("photos.storageHint")}</p>
       )}
       {error && <p className="text-destructive text-xs">{error}</p>}
 
@@ -212,7 +214,7 @@ export function PhotoManager({ photos, folder, onAdd, onChange }: Props) {
                 />
                 {i === 0 && (
                   <span className="absolute top-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
-                    {rt("photos.cover")}
+                    {t("photos.cover")}
                   </span>
                 )}
               </div>
@@ -223,8 +225,8 @@ export function PhotoManager({ photos, folder, onAdd, onChange }: Props) {
                     photos.map((x) => (x.id === p.id ? { ...x, caption: e.target.value } : x))
                   )
                 }
-                placeholder={rt("photos.caption")}
-                aria-label={`${rt("photos.caption")} ${i + 1}`}
+                placeholder={t("photos.caption")}
+                aria-label={`${t("photos.caption")} ${i + 1}`}
                 className="h-7 text-xs"
               />
               <div className="flex justify-between">
@@ -235,7 +237,7 @@ export function PhotoManager({ photos, folder, onAdd, onChange }: Props) {
                     size="icon-xs"
                     disabled={i === 0}
                     onClick={() => move(i, -1)}
-                    aria-label={rt("photos.moveUp")}
+                    aria-label={t("photos.moveUp")}
                   >
                     <ArrowUpIcon />
                   </Button>
@@ -245,7 +247,7 @@ export function PhotoManager({ photos, folder, onAdd, onChange }: Props) {
                     size="icon-xs"
                     disabled={i === photos.length - 1}
                     onClick={() => move(i, 1)}
-                    aria-label={rt("photos.moveDown")}
+                    aria-label={t("photos.moveDown")}
                   >
                     <ArrowDownIcon />
                   </Button>

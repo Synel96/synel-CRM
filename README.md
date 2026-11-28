@@ -52,12 +52,14 @@ Kikapcsolt modul eltűnik a menüből, az áttekintésről és az űrlapokról
 
 ### Bővítmények – `addons`
 
-| Bővítmény    | Kulcs         | Menüpontok                   | Mit tud                                                                                                         |
-| ------------ | ------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| **Ingatlan** | `real-estate` | Ingatlanok, Keresési igények | Ingatlanok kártyás nézetben, fotók (Cloudinary), tulajdonos, vevői keresések, automatikus párosítás, KPI-widget |
+| Bővítmény          | Kulcs          | Menüpontok                       | Mit tud                                                                                                         |
+| ------------------ | -------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Ingatlan**       | `real-estate`  | Ingatlanok, Keresési igények     | Ingatlanok kártyás nézetben, fotók (Cloudinary), tulajdonos, vevői keresések, automatikus párosítás, KPI-widget |
+| **Szolgáltatások** | `services`     | Szolgáltatások (Tartalomkezelés) | Név, rövid/részletes leírás, ár + megjegyzés („-tól”, „/hó”), kép, URL, SEO, publikálás, sorrend, kiemelés      |
+| **Vélemények**     | `testimonials` | Vélemények (Tartalomkezelés)     | Név, cég, 1–5 csillag, szöveg, forrás, kép; kapcsolathoz és szolgáltatáshoz köthető; átlagértékelés             |
 
 ```ts
-addons: ["real-estate"],
+addons: ["real-estate", "services", "testimonials"],
 ```
 
 Részletek: [`modules/real-estate/README.md`](modules/real-estate/README.md).
@@ -188,9 +190,11 @@ Iparág-specifikus funkciók külön, hozzáadható bővítményként készülne
 a CRM magjában. Egy bővítmény egy önálló mappa a `modules/` alatt: saját
 adatokkal, oldalakkal, menüpontokkal, áttekintő widgettel és kapcsolatpanellel.
 
-| Bővítmény     | Mappa                  | Leírás                                                    |
-| ------------- | ---------------------- | --------------------------------------------------------- |
-| `real-estate` | `modules/real-estate/` | Ingatlanok, fotók, vevői keresések, automatikus párosítás |
+| Bővítmény      | Mappa                   | Leírás                                                    |
+| -------------- | ----------------------- | --------------------------------------------------------- |
+| `real-estate`  | `modules/real-estate/`  | Ingatlanok, fotók, vevői keresések, automatikus párosítás |
+| `services`     | `modules/services/`     | Szolgáltatások (tartalommotor)                            |
+| `testimonials` | `modules/testimonials/` | Vélemények (tartalommotor)                                |
 
 **Bekapcsolás:** `crm.config.ts` → `addons: ["real-estate"]`.
 
@@ -201,6 +205,48 @@ blog, galéria) és **Rendszer** (beállítások). Egy csoport csak akkor jeleni
 meg, ha van benne menüpont. Az Áttekintés ugyanígy bontja a widgeteket; a
 csoportcímek ott csak akkor látszanak, ha van tartalomkezelő rész is. A
 csoportnevek átírhatók, pl. `labels: { "group.content": "Weboldal" }`.
+
+### Tartalmi bővítmények (közös tartalommotor)
+
+A weboldal tartalmát kezelő bővítmények (szolgáltatások, vélemények, és a
+tervezett projektek, blog, galéria) egy közös motorra épülnek
+(`src/crm/content/`, `components/crm/content/`). Minden elem kapja:
+
+- **státusz:** vázlat vagy publikált; a weboldal csak a publikáltat kapja meg.
+  A `publishedAt` az első publikáláskor áll be. A listában egy kattintással
+  publikálható.
+- **sorrend** (nyilakkal) és **kiemelt** jelölés;
+- **képek** (Cloudinary, típusonként beállítható darabszám);
+- saját aloldallal rendelkező típusnál **URL (slug)**, ami a címből készül,
+  magyar ékezetekkel is (`Logótervezés & arculat` → `logotervezes-arculat`),
+  típuson belül egyedi, és a cím módosításakor **nem változik**, hogy a
+  weboldalon ne törjenek el a linkek. Mellette **SEO-cím és -leírás**.
+
+**Új tartalomtípus** egy leírófájl és egy oldal:
+
+```tsx
+// modules/projektek/index.tsx
+export const projectsDef: ContentTypeDef = {
+  addonId: "projects",
+  entity: "project",
+  icon: FolderIcon,
+  labels: () => ({ plural: "Projektek", singular: "projekt", title: "Cím" }),
+  hasPage: true,
+  maxImages: 12,
+  fields: (core) => [
+    /* a típus saját mezői */
+  ],
+};
+export default defineContentAddon(projectsDef);
+
+// modules/projektek/pages/projects/+Page.tsx → <ContentListPage def={projectsDef} />
+// modules/projektek/pages/projects/+route.ts → export default "/projects";
+```
+
+A lista, a szerkesztő, a publikálás, a képek, a tevékenységnapló és az
+áttekintő kártya automatikusan elkészül. Mintának lásd a `modules/services/`
+(egyszerű) és a `modules/testimonials/` (kapcsolatpanellel, csillagokkal)
+mappát.
 
 **Új bővítmény készítése:**
 
@@ -262,14 +308,30 @@ A `robots.txt` szándékosan engedi a bejárást, hogy a keresők lássák a til
 a találatok között). Ez nem biztonsági védelem: az adatokat a bejelentkezés
 védi, nem az, hogy a cím nem kereshető.
 
-### Backend bekötése
+### Backend bekötése (Fly.io + Neon)
 
 Az adatok jelenleg a böngésző `localStorage`-ában vannak, ami demóhoz és
-egyfelhasználós használatra jó. Többfelhasználós ügyfélhez írj egy adaptert
-a `StorageAdapter` interfész szerint (`src/crm/storage.ts`: `load`, `save`,
-`clear`), és cseréld le a `getCrmStore()`-ban (`src/crm/store.ts`). Az API
-címe a `VITE_API_URL` környezeti változóba kerüljön (`src/env.ts`), a
-`vercel.json` CSP `connect-src` részébe pedig vedd fel a domaint.
+kipróbáláshoz jó. Éles ügyfélprojektekhez a terv:
+
+```
+app.ugyfel.hu (CRM, Vercel)  ──HTTPS, bejelentkezve──▶  API (Fly.io)  ──▶  Neon Postgres
+ugyfel.hu (weboldal)         ──csak olvas, publikus──▶  API (Fly.io)
+```
+
+- **API a Fly.io-n:** admin-bejelentkezés (session vagy token), CRUD a
+  CRM-adatokra, és egy **publikus, csak olvasható** végpont a weboldalnak
+  (pl. `GET /public/services`, `GET /public/testimonials`). Ez kizárólag
+  `status = "published"` elemeket ad vissza.
+- **Neon Postgres:** a CRM-adatok privátak, a tartalmi elemek publikus
+  olvasása csak az API szűrt végpontján át megy. Az adatbázis-kapcsolat
+  adatai csak a Fly.io-n vannak, a böngészőbe sosem kerülnek.
+- **A CRM oldalán:** egy új adapter a `StorageAdapter` interfész szerint
+  (`src/crm/storage.ts`: `load`, `save`, `clear`), ami az API-t hívja, és
+  csere a `getCrmStore()`-ban (`src/crm/store.ts`). Az API címe a
+  `VITE_API_URL` változóba kerül (`src/env.ts`), a domain pedig a
+  `vercel.json` CSP `connect-src` részébe.
+- **A weboldalon:** buildkor lekéri a publikált tartalmat (prerender, gyors
+  és SEO-barát marad), publikáláskor pedig egy Vercel Deploy Hook újraépíti.
 
 ## Képfeltöltés (Cloudinary)
 

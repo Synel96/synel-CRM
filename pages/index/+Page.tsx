@@ -151,7 +151,11 @@ export default function Page() {
       {contentWidgets.length > 0 && (
         <>
           <SectionTitle className="mt-4">{groupLabel("content")}</SectionTitle>
-          {contentWidgets.map((a) => (a.DashboardWidget ? <a.DashboardWidget key={a.id} /> : null))}
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {contentWidgets.map((a) =>
+              a.DashboardWidget ? <a.DashboardWidget key={a.id} /> : null
+            )}
+          </div>
         </>
       )}
     </CrmPage>

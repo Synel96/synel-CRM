@@ -1,3 +1,4 @@
+import type { MediaImage } from "@/src/crm/media";
 import type { BaseRecord, Id } from "@/src/crm/types";
 
 export const ADDON_ID = "real-estate";
@@ -45,16 +46,8 @@ export type PropertyStatus = (typeof PROPERTY_STATUSES)[number];
 /** Ingatlan.com: legfeljebb 30 fotó hirdetésenként. */
 export const MAX_PHOTOS = 30;
 
-export interface PropertyPhoto {
-  id: string;
-  /** https URL (Cloudinary vagy külső) vagy helyi tárolásnál data: URL. */
-  url: string;
-  caption: string;
-  /** Cloudinary public_id – később törléshez / portálszinkronhoz. */
-  publicId?: string | null;
-  width?: number | null;
-  height?: number | null;
-}
+/** Ingatlanfotó – a közös képtípus (src/crm/media.ts). */
+export type PropertyPhoto = MediaImage;
 
 export interface Property extends BaseRecord {
   /**

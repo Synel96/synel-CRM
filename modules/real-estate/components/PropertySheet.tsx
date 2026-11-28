@@ -25,7 +25,7 @@ import {
 } from "../logic";
 import { MAX_PHOTOS, type Property } from "../types";
 import { useRealEstate } from "../useRealEstate";
-import { PhotoManager } from "./PhotoManager";
+import { PhotoManager } from "@/components/crm/PhotoManager";
 
 export type PropertyTarget = { mode: "new"; ownerContactId?: Id } | { mode: "edit"; id: Id };
 
@@ -102,6 +102,8 @@ export function PropertySheet({ target, onClose }: Props) {
               <>
                 <PhotoManager
                   photos={property.photos}
+                  max={MAX_PHOTOS}
+                  title={rt("photos.propertyTitle")}
                   folder={`${crmConfig.media.folder}/properties/${folderSegment(property.ownId)}`}
                   onAdd={(photos) =>
                     // A legfrissebb adatra fűzünk, így a párhuzamos feltöltések nem vesznek el.

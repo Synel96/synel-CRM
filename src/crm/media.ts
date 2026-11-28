@@ -14,6 +14,18 @@ export type UploadedImage = {
   height: number | null;
 };
 
+/** Egy rekordhoz csatolt kép (bővítmények közösen használják). */
+export interface MediaImage {
+  id: string;
+  /** https URL (Cloudinary vagy külső) vagy helyi tárolásnál data: URL. */
+  url: string;
+  caption: string;
+  /** Cloudinary public_id – törléshez / szinkronhoz. */
+  publicId?: string | null;
+  width?: number | null;
+  height?: number | null;
+}
+
 export type UploadOptions = {
   /** Cloudinary mappa, pl. "synel-crm/properties/RE-1001". */
   folder?: string;
