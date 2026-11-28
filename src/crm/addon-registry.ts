@@ -10,6 +10,7 @@ import services from "@/modules/services";
 import projects from "@/modules/projects";
 import testimonials from "@/modules/testimonials";
 import blog from "@/modules/blog";
+import gallery from "@/modules/gallery";
 import type { CrmAddon } from "./addons";
 
 // Függvényben, nem modulszinten: így a körkörös importok (bővítmény →
@@ -17,7 +18,7 @@ import type { CrmAddon } from "./addons";
 function available(): CrmAddon[] {
   // A sorrend számít: a projektek a szolgáltatásokra, a vélemények mindkettőre
   // hivatkoznak a mintaadatokban; a menüben is ebben a sorrendben jelennek meg.
-  return [realEstate, services, projects, testimonials, blog];
+  return [realEstate, services, projects, testimonials, blog, gallery];
 }
 
 let active: CrmAddon[] | null = null;

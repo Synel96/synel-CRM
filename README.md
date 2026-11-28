@@ -59,9 +59,10 @@ Kikapcsolt modul eltűnik a menüből, az áttekintésről és az űrlapokról
 | **Projektek**      | `projects`     | Projektek (Tartalomkezelés)      | Referenciák: galéria (borító + képek alt szöveggel), Markdown-esettanulmány, ügyfél, cég/kapcsolat, év, kategória, technológiák, élő link, kapcsolódó szolgáltatások és vélemények |
 | **Vélemények**     | `testimonials` | Vélemények (Tartalomkezelés)     | Név, cég, 1–5 csillag, szöveg, forrás, kép; kapcsolathoz és szolgáltatáshoz köthető; átlagértékelés                                                                                |
 | **Blog**           | `blog`         | Blog (Tartalomkezelés)           | Markdown-szerkesztő előnézettel, kivonat, címkék, szerző, olvasási idő, időzített publikálás, képek alt szöveggel                                                                  |
+| **Galéria**        | `gallery`      | Galéria (Tartalomkezelés)        | Albumok kategóriával és dátummal, albumonként legfeljebb 100 kép alt szöveggel és felirattal, borító, hiányzó alt szövegek jelzése, kapcsolódó projekt                             |
 
 ```ts
-addons: ["real-estate", "services", "projects", "testimonials", "blog"],
+addons: ["real-estate", "services", "projects", "testimonials", "blog", "gallery"],
 ```
 
 Részletek: [`modules/real-estate/README.md`](modules/real-estate/README.md).
@@ -213,7 +214,7 @@ csoportnevek átírhatók, pl. `labels: { "group.content": "Weboldal" }`.
 ### Tartalmi bővítmények (közös tartalommotor)
 
 A weboldal tartalmát kezelő bővítmények (szolgáltatások, vélemények, és a
-projektek, blog és a tervezett galéria) egy közös motorra épülnek
+projektek, blog, galéria) egy közös motorra épülnek
 (`src/crm/content/`, `components/crm/content/`). Minden elem kapja:
 
 - **státusz:** vázlat vagy publikált; a weboldal csak a publikáltat kapja meg.
