@@ -67,7 +67,7 @@ Részletek: [`modules/real-estate/README.md`](modules/real-estate/README.md).
 
 | Beállítás                     | Mit szab testre                                                                                | Példa                                                |
 | ----------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| `labels`                      | Bármelyik menüpont neve (mag és bővítmény is)                                                  | `{ deals: "Ügyletek", properties: "Kínálat" }`       |
+| `labels`                      | Bármelyik menüpont és menücsoport neve (mag és bővítmény is)                                   | `{ deals: "Ügyletek", properties: "Kínálat" }`       |
 | `pipeline`                    | Az Üzletek fázisai, esélyszázalékkal; `kind: "won"` / `"lost"` a lezárt fázisokhoz             | `{ id: "offer", label: "Ajánlat", probability: 60 }` |
 | `contactTags`                 | A kapcsolatok választható címkéi                                                               | `["VIP", "Partner"]`                                 |
 | `customFields`                | Egyedi mezők: `contact`, `company`, `deal`, `task`, bővítménynél pl. `property`, `buyerSearch` | lásd [Egyedi mezők](#egyedi-mezők)                   |
@@ -194,11 +194,21 @@ adatokkal, oldalakkal, menüpontokkal, áttekintő widgettel és kapcsolatpanell
 
 **Bekapcsolás:** `crm.config.ts` → `addons: ["real-estate"]`.
 
+**Üzlet és tartalomkezelés külön:** a menü csoportokra bomlik: _Áttekintés_,
+**Üzlet** (kapcsolatok, cégek, üzletek, feladatok és az üzleti bővítmények,
+pl. ingatlanok), **Tartalomkezelés** (a `group: "content"` bővítmények, pl.
+blog, galéria) és **Rendszer** (beállítások). Egy csoport csak akkor jelenik
+meg, ha van benne menüpont. Az Áttekintés ugyanígy bontja a widgeteket; a
+csoportcímek ott csak akkor látszanak, ha van tartalomkezelő rész is. A
+csoportnevek átírhatók, pl. `labels: { "group.content": "Weboldal" }`.
+
 **Új bővítmény készítése:**
 
 1. Hozz létre egy mappát: `modules/<név>/`.
 2. Az `index.ts` exportáljon egy `defineAddon({...})` objektumot
    (interfész és leírás: `src/crm/addons.ts`). Lehetséges részei:
+   - `group`: `"business"` (alapértelmezés) vagy `"content"` – az üzleti vagy
+     a tartalomkezelő részbe kerül (lásd lent);
    - `nav`: menüpontok;
    - `emptyData`, `normalize`, `seed`: az adatok kezdőállapota, betöltése
      és mintaadatai;

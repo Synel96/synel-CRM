@@ -10,8 +10,13 @@ import type { ComponentType } from "react";
 import type { CrmConfig } from "./config";
 import type { Collection, CrmData, Id, RelatedRef } from "./types";
 
+/** Menücsoport: üzleti rész vagy tartalomkezelés (blog, galéria, …). */
+export type AddonGroup = "business" | "content";
+
 export type AddonNavItem = {
   href: string;
+  /** Felülírja a bővítmény csoportját ennél a menüpontnál. */
+  group?: AddonGroup;
   /** Menüpont azonosító – a config `labels` mezőjével átnevezhető. */
   id: string;
   label: string;
@@ -21,7 +26,12 @@ export type AddonNavItem = {
 export interface CrmAddon<D = unknown> {
   id: string;
   name: string;
-  /** Menüpontok (a Beállítások elé kerülnek). */
+  /**
+   * Hová tartozik a menüben és az Áttekintésen: "business" (alapértelmezés,
+   * pl. ingatlanok) vagy "content" (tartalomkezelés: blog, galéria, …).
+   */
+  group?: AddonGroup;
+  /** Menüpontok (a bővítmény csoportjába kerülnek). */
   nav: () => AddonNavItem[];
 
   /** Üres kezdőállapot. */

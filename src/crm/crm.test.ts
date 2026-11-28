@@ -263,3 +263,58 @@ describe("utólag bekapcsolt bővítmény", () => {
     expect(store.getState().data.addons["demo-addon"]).toEqual({ items: [] });
   });
 });
+
+describe("menücsoportok", () => {
+  const icon = (() => null) as unknown as import("lucide-react").LucideIcon;
+  const addon = (
+    id: string,
+    group?: "business" | "content",
+    navGroup?: "business" | "content"
+  ) => ({
+    id,
+    name: id,
+    group,
+    nav: () => [{ id, href: `/${id}`, label: id, icon, group: navGroup }],
+    emptyData: () => ({}),
+  });
+
+  it("üzleti CRM-nél nincs üres Tartalomkezelés csoport", async () => {
+    const { buildNav } = await import("./nav");
+    const sections = buildNav(crmConfig, [addon("properties")]);
+    expect(sections.map((s) => s.id)).toEqual(["top", "business", "system"]);
+    expect(sections[0].title).toBeNull();
+    expect(sections.find((s) => s.id === "business")!.items.map((i) => i.id)).toContain(
+      "properties"
+    );
+  });
+
+  it("a tartalmi bővítmények külön csoportba kerülnek, a sorrend fix", async () => {
+    const { buildNav } = await import("./nav");
+    const sections = buildNav(crmConfig, [
+      addon("blog", "content"),
+      addon("properties"),
+      addon("gallery", "business", "content"), // menüpont-szintű felülírás
+    ]);
+    expect(sections.map((s) => [s.id, s.title])).toEqual([
+      ["top", null],
+      ["business", "Üzlet"],
+      ["content", "Tartalomkezelés"],
+      ["system", "Rendszer"],
+    ]);
+    expect(sections[2].items.map((i) => i.id)).toEqual(["blog", "gallery"]);
+  });
+
+  it("kikapcsolt mag-modulok nem jelennek meg", async () => {
+    const { buildNav } = await import("./nav");
+    const cfg = { ...crmConfig, modules: { companies: false, deals: false, tasks: false } };
+    const business = buildNav(cfg, []).find((s) => s.id === "business")!;
+    expect(business.items.map((i) => i.id)).toEqual(["contacts"]);
+  });
+
+  it("widgetek csoport szerint", async () => {
+    const { addonsInGroup } = await import("./nav");
+    const list = [addon("a"), addon("b", "content"), addon("c", "business")];
+    expect(addonsInGroup(list, "business").map((a) => a.id)).toEqual(["a", "c"]);
+    expect(addonsInGroup(list, "content").map((a) => a.id)).toEqual(["b"]);
+  });
+});

@@ -14,6 +14,7 @@ import { ADDON_ID, type RealEstateData } from "./types";
 export default defineAddon<RealEstateData>({
   id: ADDON_ID,
   name: "Ingatlan",
+  group: "business",
   nav: () => [
     { id: "properties", href: "/properties", label: rt("nav.properties"), icon: HouseIcon },
     { id: "searches", href: "/searches", label: rt("nav.searches"), icon: SearchCheckIcon },

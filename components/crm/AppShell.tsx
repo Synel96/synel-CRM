@@ -1,13 +1,4 @@
-import {
-  BriefcaseIcon,
-  Building2Icon,
-  CheckSquareIcon,
-  LayoutDashboardIcon,
-  MenuIcon,
-  SettingsIcon,
-  UsersIcon,
-  type LucideIcon,
-} from "lucide-react";
+import { MenuIcon } from "lucide-react";
 import { useLayoutEffect, useState, type ReactNode } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import crmConfig from "@/crm.config";
@@ -23,27 +14,9 @@ import {
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
 import { activeAddons } from "@/src/crm/addon-registry";
-import { navLabel, t } from "@/src/crm/i18n";
+import { t } from "@/src/crm/i18n";
+import { buildNav } from "@/src/crm/nav";
 import { useCrm } from "@/src/crm/store";
-
-type NavItem = { href: string; label: string; icon: LucideIcon };
-
-function navItems(): NavItem[] {
-  const m = crmConfig.modules;
-  return [
-    { href: "/", label: t("nav.dashboard"), icon: LayoutDashboardIcon },
-    { href: "/contacts", label: t("nav.contacts"), icon: UsersIcon },
-    ...(m.companies
-      ? [{ href: "/companies", label: t("nav.companies"), icon: Building2Icon }]
-      : []),
-    ...(m.deals ? [{ href: "/deals", label: t("nav.deals"), icon: BriefcaseIcon }] : []),
-    ...(m.tasks ? [{ href: "/tasks", label: t("nav.tasks"), icon: CheckSquareIcon }] : []),
-    ...activeAddons().flatMap((a) =>
-      a.nav().map((n) => ({ href: n.href, label: navLabel(n.id, n.label), icon: n.icon }))
-    ),
-    { href: "/settings", label: t("nav.settings"), icon: SettingsIcon },
-  ];
-}
 
 function NavLinks({ onNavigate }: { onNavigate?: boolean }) {
   const { urlPathname } = usePageContext();
@@ -51,32 +24,48 @@ function NavLinks({ onNavigate }: { onNavigate?: boolean }) {
     href === "/" ? urlPathname === "/" : urlPathname.startsWith(href);
 
   return (
-    <nav className="flex flex-col gap-0.5" aria-label={t("nav.menu")}>
-      {navItems().map(({ href, label, icon: Icon }) => {
-        const link = (
-          <a
-            key={href}
-            href={href}
-            aria-current={isActive(href) ? "page" : undefined}
-            className={cn(
-              "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors",
-              isActive(href)
-                ? "bg-(--crm-accent)/12 font-medium text-(--crm-accent)"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            )}
+    <nav className="flex flex-col gap-4" aria-label={t("nav.menu")}>
+      {buildNav(crmConfig, activeAddons()).map((section) => (
+        <div key={section.id} className="flex flex-col gap-0.5">
+          {section.title && (
+            <p
+              id={`nav-${section.id}${onNavigate ? "-m" : ""}`}
+              className="text-muted-foreground px-2.5 pb-1 text-[11px] font-semibold tracking-wider uppercase"
+            >
+              {section.title}
+            </p>
+          )}
+          <ul
+            className="flex flex-col gap-0.5"
+            aria-labelledby={
+              section.title ? `nav-${section.id}${onNavigate ? "-m" : ""}` : undefined
+            }
           >
-            <Icon className="size-4" />
-            {label}
-          </a>
-        );
-        return onNavigate ? (
-          <PushDrawerClose asChild key={href}>
-            {link}
-          </PushDrawerClose>
-        ) : (
-          link
-        );
-      })}
+            {section.items.map(({ href, label, icon: Icon }) => {
+              const link = (
+                <a
+                  href={href}
+                  aria-current={isActive(href) ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors",
+                    isActive(href)
+                      ? "bg-(--crm-accent)/12 font-medium text-(--crm-accent)"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <Icon className="size-4" />
+                  {label}
+                </a>
+              );
+              return (
+                <li key={href}>
+                  {onNavigate ? <PushDrawerClose asChild>{link}</PushDrawerClose> : link}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
     </nav>
   );
 }

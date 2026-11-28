@@ -8,6 +8,9 @@ const hu = {
   "nav.tasks": "Feladatok",
   "nav.settings": "Beállítások",
   "nav.menu": "Menü",
+  "group.business": "Üzlet",
+  "group.content": "Tartalomkezelés",
+  "group.system": "Rendszer",
 
   "common.new": "Új",
   "common.save": "Mentés",
@@ -113,6 +116,9 @@ const en: Record<MessageKey, string> = {
   "nav.tasks": "Tasks",
   "nav.settings": "Settings",
   "nav.menu": "Menu",
+  "group.business": "Business",
+  "group.content": "Content",
+  "group.system": "System",
   "common.new": "New",
   "common.save": "Save",
   "common.cancel": "Cancel",
@@ -211,6 +217,11 @@ export function t(key: MessageKey): string {
     if (override) return override;
   }
   return dict[key];
+}
+
+/** Menücsoport címe; a config `labels` mezőjével átírható, pl. { "group.content": "Weboldal" }. */
+export function groupLabel(group: "business" | "content" | "system"): string {
+  return crmConfig.labels[`group.${group}`] ?? dict[`group.${group}`];
 }
 
 /** Menüpont neve: config-felülírás, különben a megadott alapértelmezés. */

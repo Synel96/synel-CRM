@@ -2,14 +2,28 @@ import crmConfig from "@/crm.config";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardTitle } from "@/components/ui/card";
 import { CrmPage, EmptyState, KpiCard, KpiGrid } from "@/components/crm/Page";
-import { formatDate, formatDateTime, formatMoney, t } from "@/src/crm/i18n";
+import { formatDate, formatDateTime, formatMoney, groupLabel, t } from "@/src/crm/i18n";
 import { activeAddons } from "@/src/crm/addon-registry";
+import { addonsInGroup } from "@/src/crm/nav";
 import { dashboardStats, pipelineSummary, taskBucket } from "@/src/crm/operations";
 import { relatedLabel } from "@/src/crm/related";
 import { useCrm } from "@/src/crm/store";
 
+function SectionTitle({ children, className }: { children: string; className?: string }) {
+  return (
+    <h2
+      className={`text-muted-foreground border-b pb-1.5 text-xs font-semibold tracking-wider uppercase ${className ?? ""}`}
+    >
+      {children}
+    </h2>
+  );
+}
+
 export default function Page() {
   const { data } = useCrm();
+  const withWidget = activeAddons().filter((a) => a.DashboardWidget);
+  const businessWidgets = addonsInGroup(withWidget, "business");
+  const contentWidgets = addonsInGroup(withWidget, "content");
   const stages = crmConfig.pipeline;
   const stats = dashboardStats(data, stages);
   const summary = pipelineSummary(data, stages);
@@ -45,13 +59,17 @@ export default function Page() {
 
   return (
     <CrmPage title={t("nav.dashboard")}>
+      {/* Csoportcímek csak akkor, ha van tartalomkezelő rész is – egy tisztán
+          üzleti CRM-nél felesleges lenne. */}
+      {contentWidgets.length > 0 && <SectionTitle>{groupLabel("business")}</SectionTitle>}
+
       <KpiGrid count={kpis.length}>
         {kpis.map((k) => (
           <KpiCard key={k.label} label={k.label} value={k.value} />
         ))}
       </KpiGrid>
 
-      {activeAddons().map((a) => (a.DashboardWidget ? <a.DashboardWidget key={a.id} /> : null))}
+      {businessWidgets.map((a) => (a.DashboardWidget ? <a.DashboardWidget key={a.id} /> : null))}
 
       <div className="grid gap-4 lg:grid-cols-2">
         {modules.deals && (
@@ -129,6 +147,13 @@ export default function Page() {
           )}
         </Card>
       </div>
+
+      {contentWidgets.length > 0 && (
+        <>
+          <SectionTitle className="mt-4">{groupLabel("content")}</SectionTitle>
+          {contentWidgets.map((a) => (a.DashboardWidget ? <a.DashboardWidget key={a.id} /> : null))}
+        </>
+      )}
     </CrmPage>
   );
 }
