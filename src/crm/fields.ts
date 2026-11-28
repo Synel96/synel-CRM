@@ -21,6 +21,8 @@ export type FormField = {
   nullable?: boolean;
   /** Segédszöveg a mező alatt. */
   hint?: string;
+  /** Hosszabb magyarázat a „?” gomb mögött (mire jó, hogyan töltsd ki). */
+  help?: string;
   /** Címke-mezőnél: csak a felkínált opciók választhatók (nincs szabad szöveg). */
   optionsOnly?: boolean;
 };

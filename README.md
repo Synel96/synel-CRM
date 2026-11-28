@@ -216,7 +216,13 @@ tervezett projektek, blog, galéria) egy közös motorra épülnek
   A `publishedAt` az első publikáláskor áll be. A listában egy kattintással
   publikálható.
 - **sorrend** (nyilakkal) és **kiemelt** jelölés;
-- **képek** (Cloudinary, típusonként beállítható darabszám);
+- **képek** (Cloudinary, típusonként beállítható darabszám), mindegyikhez
+  **alt szöveggel** és képaláírással. Az alt szöveg az akadálymentességhez
+  (képernyőolvasók) és a SEO-hoz kell, ezért a felület jelzi, ha valamelyik
+  képnél hiányzik. Ez minden képfeltöltőre érvényes, az ingatlanfotókra is.
+- **„?” súgó** a magyarázatra szoruló mezők mellett (alt szöveg, képaláírás,
+  URL, SEO). Kattintásra, érintésre és billentyűzettel is nyílik. Saját
+  mezőhöz a `FormField.help` adja meg;
 - saját aloldallal rendelkező típusnál **URL (slug)**, ami a címből készül,
   magyar ékezetekkel is (`Logótervezés & arculat` → `logotervezes-arculat`),
   típuson belül egyedi, és a cím módosításakor **nem változik**, hogy a

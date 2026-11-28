@@ -35,14 +35,22 @@ export function contentFields(def: ContentTypeDef, config: CrmConfig, core: CrmD
             label: t("content.slug"),
             type: "text",
             hint: t("content.slugHint"),
+            help: t("content.slugHelp"),
             wide: true,
           }),
-          field({ name: "seoTitle", label: t("content.seoTitle"), type: "text", wide: true }),
+          field({
+            name: "seoTitle",
+            label: t("content.seoTitle"),
+            type: "text",
+            wide: true,
+            help: t("content.seoTitleHelp"),
+          }),
           field({
             name: "seoDescription",
             label: t("content.seoDescription"),
             type: "textarea",
             hint: t("content.seoHint"),
+            help: t("content.seoDescriptionHelp"),
             wide: true,
           }),
         ]

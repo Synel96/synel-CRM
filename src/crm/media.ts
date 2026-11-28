@@ -19,12 +19,27 @@ export interface MediaImage {
   id: string;
   /** https URL (Cloudinary vagy külső) vagy helyi tárolásnál data: URL. */
   url: string;
+  /**
+   * Alt (helyettesítő) szöveg: mit mutat a kép. Akadálymentesség és SEO
+   * miatt minden képhez meg kell adni – a felület figyelmeztet, ha hiányzik.
+   */
+  alt?: string;
+  /** Képaláírás (a weboldalon a kép alatt látszik; nem helyettesíti az altot). */
   caption: string;
   /** Cloudinary public_id – törléshez / szinkronhoz. */
   publicId?: string | null;
   width?: number | null;
   height?: number | null;
 }
+
+/** Hány képnél hiányzik az alt szöveg. */
+export function missingAltCount(images: { alt?: string }[]): number {
+  return images.filter((i) => !i.alt?.trim()).length;
+}
+
+/** A kép alt attribútuma megjelenítéshez: alt szöveg, különben felirat. */
+export const altOf = (img: { alt?: string; caption?: string }, fallback = "") =>
+  img.alt?.trim() || img.caption?.trim() || fallback;
 
 export type UploadOptions = {
   /** Cloudinary mappa, pl. "synel-crm/properties/RE-1001". */

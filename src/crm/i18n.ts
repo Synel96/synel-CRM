@@ -131,6 +131,20 @@ const hu = {
   "photos.moveUp": "Feljebb",
   "photos.moveDown": "Lejjebb",
   "photos.cover": "Borítókép",
+  "photos.alt": "Alt szöveg",
+  "photos.altPlaceholder": "Mi látható a képen?",
+  "photos.altHelp":
+    "Az alt szöveg (helyettesítő szöveg) a kép rövid leírása. A képernyőolvasó ezt olvassa fel a látássérült látogatóknak, ez jelenik meg, ha a kép nem tölt be, és a Google is ebből érti meg, mi van a képen (képkeresés, SEO).\n\nÍrd le tömören, mit mutat a kép, pl. „Világos nappali parkettával és nagy ablakkal”. Ne kezdd úgy, hogy „Kép erről…”, ne a fájlnevet írd, és ne halmozz kulcsszavakat. Kb. 5–15 szó elég.",
+  "photos.altMissing": "Hiányzik az alt szöveg",
+  "photos.altMissingCount": "képnél hiányzik az alt szöveg",
+  "photos.captionHelp":
+    "A képaláírás a weboldalon a kép alatt megjelenő szöveg (pl. „Nappali – 2024-es felújítás után”). Nem kötelező, és nem helyettesíti az alt szöveget: az aláírást mindenki látja, az alt szöveg a képet írja le azoknak, akik nem látják.",
+  "content.slugHelp":
+    "Az URL (slug) a weboldali cím utolsó része, pl. synelweb.hu/szolgaltatasok/weboldal-keszites. Kisbetű, szám és kötőjel lehet benne.\n\nÜresen hagyva a címből készül. Publikálás után lehetőleg ne változtasd: a régi link (megosztások, Google-találatok) különben nem fog működni.",
+  "content.seoTitleHelp":
+    "A böngészőfülön és a Google-találatok kék címében jelenik meg. Ha üres, az elem neve lesz. Legyen 50–60 karakter, és szerepeljen benne, amire a látogató keres, pl. „Weboldal-készítés Budapesten | Synelweb”.",
+  "content.seoDescriptionHelp":
+    "A Google-találat alatti szürke szöveg és a megosztáskor (Facebook, Messenger) megjelenő leírás. Nem közvetlen rangsorolási tényező, de ettől függ, rákattintanak-e. Legyen 120–160 karakter, és mondja el röviden, mit kap a látogató.",
   "settings.media": "Képtárhely",
   "settings.mediaLocal": "Böngésző (Cloudinary nincs beállítva)",
   "settings.data": "Adatok",
@@ -269,6 +283,20 @@ const en: Record<MessageKey, string> = {
   "photos.moveUp": "Move up",
   "photos.moveDown": "Move down",
   "photos.cover": "Cover",
+  "photos.alt": "Alt text",
+  "photos.altPlaceholder": "What does the image show?",
+  "photos.altHelp":
+    "Alt text is a short description of the image. Screen readers read it out to visually impaired visitors, it is shown when the image fails to load, and Google uses it to understand the image (image search, SEO).\n\nDescribe briefly what the image shows, e.g. “Bright living room with parquet floor and a large window”. Don't start with “Image of…”, don't use the file name and don't stuff keywords. About 5–15 words is enough.",
+  "photos.altMissing": "Alt text missing",
+  "photos.altMissingCount": "image(s) missing alt text",
+  "photos.captionHelp":
+    "The caption is shown under the image on the website. It is optional and does not replace alt text: everyone sees the caption, while alt text describes the image for those who can't see it.",
+  "content.slugHelp":
+    "The slug is the last part of the page URL, e.g. example.com/services/web-design. Lowercase letters, digits and hyphens only.\n\nLeave it empty to generate it from the title. Avoid changing it after publishing, otherwise old links (shares, Google results) will break.",
+  "content.seoTitleHelp":
+    "Shown on the browser tab and as the blue title in Google results. Defaults to the item's name. Aim for 50–60 characters including what visitors search for.",
+  "content.seoDescriptionHelp":
+    "The grey text under the Google result and the description shown when shared (Facebook, Messenger). It affects whether people click. Aim for 120–160 characters.",
   "settings.media": "Image storage",
   "settings.mediaLocal": "Browser (Cloudinary not configured)",
   "settings.data": "Data",

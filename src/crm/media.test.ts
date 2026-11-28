@@ -131,3 +131,18 @@ describe("cloudinaryUploader", () => {
     ).rejects.toMatchObject({ code: "network" });
   });
 });
+
+describe("alt szöveg", () => {
+  it("megszámolja, hány képnél hiányzik (szóköz sem számít alt szövegnek)", async () => {
+    const { missingAltCount } = await import("./media");
+    expect(missingAltCount([{ alt: "Nappali" }, { alt: "  " }, {}, { alt: "Konyha" }])).toBe(2);
+    expect(missingAltCount([])).toBe(0);
+  });
+
+  it("megjelenítéshez: alt → felirat → tartalék", async () => {
+    const { altOf } = await import("./media");
+    expect(altOf({ alt: "Nappali", caption: "2024" }, "x")).toBe("Nappali");
+    expect(altOf({ alt: " ", caption: "Felújítás után" }, "x")).toBe("Felújítás után");
+    expect(altOf({ caption: "" }, "Ingatlan címe")).toBe("Ingatlan címe");
+  });
+});

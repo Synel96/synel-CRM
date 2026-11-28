@@ -1,5 +1,6 @@
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { HelpTip } from "@/components/ui/help-tip";
 import { Input, Label, NativeSelect, Textarea } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { t } from "@/src/crm/i18n";
@@ -61,22 +62,29 @@ export function RecordForm({
           return (
             <div key={f.name} className={cn("flex flex-col gap-1.5", f.wide && "sm:col-span-2")}>
               {f.type === "boolean" ? (
-                <label htmlFor={id} className="flex items-center gap-2 text-sm">
-                  <input
-                    id={id}
-                    type="checkbox"
-                    checked={value === true}
-                    onChange={(e) => set(f.name, e.target.checked)}
-                    className="size-4 accent-(--crm-accent)"
-                  />
-                  {f.label}
-                </label>
+                <span className="flex items-center gap-1.5">
+                  <label htmlFor={id} className="flex items-center gap-2 text-sm">
+                    <input
+                      id={id}
+                      type="checkbox"
+                      checked={value === true}
+                      onChange={(e) => set(f.name, e.target.checked)}
+                      className="size-4 accent-(--crm-accent)"
+                    />
+                    {f.label}
+                  </label>
+                  {f.help && <HelpTip label={f.label}>{f.help}</HelpTip>}
+                </span>
               ) : (
                 <>
-                  <Label htmlFor={id}>
-                    {f.label}
-                    {f.required && <span className="text-destructive"> *</span>}
-                  </Label>
+                  {/* A súgógomb a <label>-en kívül van, különben a kattintás a mezőre ugrana. */}
+                  <span className="flex items-center gap-1.5">
+                    <Label htmlFor={id}>
+                      {f.label}
+                      {f.required && <span className="text-destructive"> *</span>}
+                    </Label>
+                    {f.help && <HelpTip label={f.label}>{f.help}</HelpTip>}
+                  </span>
                   <FieldInput field={f} id={id} value={String(value ?? "")} onChange={set} />
                 </>
               )}

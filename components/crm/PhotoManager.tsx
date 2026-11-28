@@ -4,13 +4,23 @@ import {
   CloudIcon,
   ImagePlusIcon,
   Trash2Icon,
+  TriangleAlertIcon,
   XIcon,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { HelpTip } from "@/components/ui/help-tip";
+import { Input, Label } from "@/components/ui/input";
 import { t, type MessageKey } from "@/src/crm/i18n";
-import { getImageUploader, imageUrl, UploadError, type MediaImage } from "@/src/crm/media";
+import {
+  altOf,
+  getImageUploader,
+  imageUrl,
+  missingAltCount,
+  UploadError,
+  type MediaImage,
+} from "@/src/crm/media";
 import { newId } from "@/src/crm/operations";
 
 type Props = {
@@ -45,6 +55,8 @@ export function PhotoManager({ photos, max = 30, title, folder, onAdd, onChange 
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<Pending[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
+  const baseId = useId();
+  const missingAlt = missingAltCount(photos);
   const uploader = getImageUploader();
   const uploading = pending.filter((p) => !p.error).length;
   const room = max - photos.length - uploading;
@@ -76,7 +88,10 @@ export function PhotoManager({ photos, max = 30, title, folder, onAdd, onChange 
               publicId: img.publicId,
               width: img.width,
               height: img.height,
-              caption: file.name.replace(/\.[^.]+$/, ""),
+              // A fájlnév se aláírásnak, se alt szövegnek nem jó – üresen hagyjuk,
+              // a felület figyelmeztet, hogy írják meg.
+              alt: "",
+              caption: "",
             },
           ]);
           setPending((list) => list.filter((p) => p.id !== id));
@@ -119,7 +134,7 @@ export function PhotoManager({ photos, max = 30, title, folder, onAdd, onChange 
           const value = url.trim();
           if (!/^https:\/\/\S+$/i.test(value)) return setError(t("photos.invalidUrl"));
           setError(null);
-          onAdd([{ id: newId(), url: value, caption: "" }]);
+          onAdd([{ id: newId(), url: value, alt: "", caption: "" }]);
           setUrl("");
         }}
       >
@@ -201,14 +216,25 @@ export function PhotoManager({ photos, max = 30, title, folder, onAdd, onChange 
         </ul>
       )}
 
+      {missingAlt > 0 && (
+        <p
+          role="status"
+          className="flex items-center gap-1.5 rounded-md bg-amber-500/10 px-2.5 py-1.5 text-xs text-amber-800 dark:text-amber-300"
+        >
+          <TriangleAlertIcon className="size-3.5 shrink-0" aria-hidden />
+          {missingAlt} {t("photos.altMissingCount")}
+          <HelpTip label={t("photos.alt")}>{t("photos.altHelp")}</HelpTip>
+        </p>
+      )}
+
       {photos.length > 0 && (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {photos.map((p, i) => (
             <li key={p.id} className="flex flex-col gap-1.5 rounded-lg border p-1.5">
               <div className="bg-muted relative aspect-[4/3] overflow-hidden rounded-md">
                 <img
                   src={imageUrl(p.url, { width: 360, height: 270 })}
-                  alt={p.caption}
+                  alt={altOf(p)}
                   loading="lazy"
                   className="size-full object-cover"
                 />
@@ -218,16 +244,23 @@ export function PhotoManager({ photos, max = 30, title, folder, onAdd, onChange 
                   </span>
                 )}
               </div>
-              <Input
+              <PhotoTextField
+                id={`${baseId}-${p.id}-alt`}
+                label={t("photos.alt")}
+                help={t("photos.altHelp")}
+                value={p.alt ?? ""}
+                placeholder={t("photos.altPlaceholder")}
+                warning={p.alt?.trim() ? undefined : t("photos.altMissing")}
+                onChange={(alt) => onChange(photos.map((x) => (x.id === p.id ? { ...x, alt } : x)))}
+              />
+              <PhotoTextField
+                id={`${baseId}-${p.id}-caption`}
+                label={t("photos.caption")}
+                help={t("photos.captionHelp")}
                 value={p.caption}
-                onChange={(e) =>
-                  onChange(
-                    photos.map((x) => (x.id === p.id ? { ...x, caption: e.target.value } : x))
-                  )
+                onChange={(caption) =>
+                  onChange(photos.map((x) => (x.id === p.id ? { ...x, caption } : x)))
                 }
-                placeholder={t("photos.caption")}
-                aria-label={`${t("photos.caption")} ${i + 1}`}
-                className="h-7 text-xs"
               />
               <div className="flex justify-between">
                 <span className="flex">
@@ -267,5 +300,48 @@ export function PhotoManager({ photos, max = 30, title, folder, onAdd, onChange 
         </ul>
       )}
     </section>
+  );
+}
+
+/** Felirattal, „?” súgóval és opcionális figyelmeztetéssel ellátott szövegmező. */
+function PhotoTextField({
+  id,
+  label,
+  help,
+  value,
+  placeholder,
+  warning,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  help: string;
+  value: string;
+  placeholder?: string;
+  warning?: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="flex items-center gap-1">
+        <Label htmlFor={id} className="text-xs">
+          {label}
+        </Label>
+        <HelpTip label={label}>{help}</HelpTip>
+      </span>
+      <Input
+        id={id}
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        aria-describedby={warning ? `${id}-warn` : undefined}
+        className={cn("h-8 text-xs", warning && "border-amber-500/70")}
+      />
+      {warning && (
+        <span id={`${id}-warn`} className="text-[11px] text-amber-700 dark:text-amber-400">
+          {warning}
+        </span>
+      )}
+    </div>
   );
 }

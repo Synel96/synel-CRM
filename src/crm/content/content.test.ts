@@ -180,6 +180,11 @@ describe("szolgáltatások", () => {
     expect(names).toEqual(
       expect.arrayContaining(["priceFrom", "status", "featured", "slug", "seoTitle"])
     );
+    // Az URL és a SEO mezőknél „?” súgó magyarázza, mire valók.
+    const fields = contentFields(servicesDef, crmConfig, emptyData());
+    for (const name of ["slug", "seoTitle", "seoDescription"]) {
+      expect(fields.find((f) => f.name === name)?.help, name).toBeTruthy();
+    }
   });
 });
 
