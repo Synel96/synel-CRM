@@ -17,14 +17,17 @@ import { memoryAdapter, parseCrmData } from "./storage";
 import { createCrmStore } from "./store";
 import { emptyData } from "./types";
 
-const stages = crmConfig.pipeline;
+// A pipeline-tesztek az „általános” profil fázisaira épülnek (stabil százalékok).
+const generalConfig = defineCrmConfig({ brand: { name: "Teszt" } });
+const stages = generalConfig.pipeline;
 const NOW = new Date(2026, 10, 15, 12, 0, 0);
 
 describe("crm.config", () => {
   it("a gyári config és az ingatlanos preset is érvényes", () => {
     expect(crmConfig.pipeline.length).toBeGreaterThan(1);
     expect(realEstate.modules.companies).toBe(false);
-    expect(realEstate.addons).toEqual(["real-estate"]);
+    expect(realEstate.addons).toEqual(["real-estate", "testimonials", "blog"]);
+    expect(realEstate.industry).toBe("real-estate");
   });
 
   it("hibás configra érthető hibát dob", () => {

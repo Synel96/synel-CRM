@@ -23,6 +23,38 @@ Tailwind v4, [shadcn](https://ui.shadcn.com) UI-elemek.
   mintaadatok visszaállítása
 - Sötét mód, mobilnézet, magyar és angol felület
 
+## Üzlettípus (`industry`)
+
+Az első és legfontosabb beállítás. Az üzlettípus-profil adja a modulokat,
+bővítményeket, menüneveket, pipeline-t, címkéket, egyedi mezőket és a
+mintaadatokat, így egy étterem étlapot és rendezvényeket lát, egy
+ingatlaniroda ingatlanokat és ügyleteket.
+
+```ts
+// crm.config.ts
+export default defineCrmConfig({
+  industry: "hospitality",
+  brand: { name: "Bisztró 52" },
+  // bármi felülírható – a többi a profilból jön
+});
+```
+
+| Profil                | Kulcs         | Bővítmények                                          | Menünevek / pipeline                                                   |
+| --------------------- | ------------- | ---------------------------------------------------- | ---------------------------------------------------------------------- |
+| Általános             | `general`     | –                                                    | Kapcsolatok, Üzletek; Új érdeklődő → Megnyert                          |
+| Webstúdió / ügynökség | `agency`      | szolgáltatások, projektek, vélemények, blog, galéria | Ajánlatok; Érdeklődő → Igényfelmérés → Árajánlat → Megrendelve         |
+| Ingatlaniroda         | `real-estate` | ingatlanok, vélemények, blog                         | Ügyfelek, Ügyletek; Érdeklődés → Megtekintés → … → Adásvétel           |
+| Vendéglátóhely        | `hospitality` | étlap, szezonális ajánlatok, galéria, vélemények     | Vendégek, Rendezvények; Érdeklődés → Menüajánlat → Foglaló → Megtartva |
+
+**Felülírási szabályok:** egyszerű értékek, `addons`, `pipeline` és
+`contactTags` esetén az ügyfél értéke nyer. A `modules`, `labels` és
+`addonSettings` kulcsonként fésülődik. A `customFields` entitásonként: ha
+megadsz `deal` mezőket, azok cserélik a profiléit, a többi entitásé marad.
+
+**Új üzlettípus:** egy új profil a `src/crm/industries.ts`-ben, és ha kell,
+hozzá tartozó bővítmények a `modules/` alá. Kész ügyfél-példák: `presets/`
+(`real-estate.ts`, `hospitality.ts`).
+
 ## Állítható modulok
 
 Minden ügyfélnél a `crm.config.ts`-ben dől el, mi látszik.
@@ -52,14 +84,16 @@ Kikapcsolt modul eltűnik a menüből, az áttekintésről és az űrlapokról
 
 ### Bővítmények – `addons`
 
-| Bővítmény          | Kulcs          | Menüpontok                       | Mit tud                                                                                                                                                                            |
-| ------------------ | -------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Ingatlan**       | `real-estate`  | Ingatlanok, Keresési igények     | Ingatlanok kártyás nézetben, fotók (Cloudinary), tulajdonos, vevői keresések, automatikus párosítás, KPI-widget                                                                    |
-| **Szolgáltatások** | `services`     | Szolgáltatások (Tartalomkezelés) | Név, rövid/részletes leírás, ár + megjegyzés („-tól”, „/hó”), kép, URL, SEO, publikálás, sorrend, kiemelés                                                                         |
-| **Projektek**      | `projects`     | Projektek (Tartalomkezelés)      | Referenciák: galéria (borító + képek alt szöveggel), Markdown-esettanulmány, ügyfél, cég/kapcsolat, év, kategória, technológiák, élő link, kapcsolódó szolgáltatások és vélemények |
-| **Vélemények**     | `testimonials` | Vélemények (Tartalomkezelés)     | Név, cég, 1–5 csillag, szöveg, forrás, kép; kapcsolathoz és szolgáltatáshoz köthető; átlagértékelés                                                                                |
-| **Blog**           | `blog`         | Blog (Tartalomkezelés)           | Markdown-szerkesztő előnézettel, kivonat, címkék, szerző, olvasási idő, időzített publikálás, képek alt szöveggel                                                                  |
-| **Galéria**        | `gallery`      | Galéria (Tartalomkezelés)        | Albumok kategóriával és dátummal, albumonként legfeljebb 100 kép alt szöveggel és felirattal, borító, hiányzó alt szövegek jelzése, kapcsolódó projekt                             |
+| Bővítmény                | Kulcs          | Menüpontok                             | Mit tud                                                                                                                                                                            |
+| ------------------------ | -------------- | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Ingatlan**             | `real-estate`  | Ingatlanok, Keresési igények           | Ingatlanok kártyás nézetben, fotók (Cloudinary), tulajdonos, vevői keresések, automatikus párosítás, KPI-widget                                                                    |
+| **Szolgáltatások**       | `services`     | Szolgáltatások (Tartalomkezelés)       | Név, rövid/részletes leírás, ár + megjegyzés („-tól”, „/hó”), kép, URL, SEO, publikálás, sorrend, kiemelés                                                                         |
+| **Projektek**            | `projects`     | Projektek (Tartalomkezelés)            | Referenciák: galéria (borító + képek alt szöveggel), Markdown-esettanulmány, ügyfél, cég/kapcsolat, év, kategória, technológiák, élő link, kapcsolódó szolgáltatások és vélemények |
+| **Vélemények**           | `testimonials` | Vélemények (Tartalomkezelés)           | Név, cég, 1–5 csillag, szöveg, forrás, kép; kapcsolathoz és szolgáltatáshoz köthető; átlagértékelés                                                                                |
+| **Blog**                 | `blog`         | Blog (Tartalomkezelés)                 | Markdown-szerkesztő előnézettel, kivonat, címkék, szerző, olvasási idő, időzített publikálás, képek alt szöveggel                                                                  |
+| **Galéria**              | `gallery`      | Galéria (Tartalomkezelés)              | Albumok kategóriával és dátummal, albumonként legfeljebb 100 kép alt szöveggel és felirattal, borító, hiányzó alt szövegek jelzése, kapcsolódó projekt                             |
+| **Étlap**                | `menu`         | Étlap (Tartalomkezelés)                | Szekciók (configból), ár, kiszerelés, alkoholtartalom, a 14 uniós allergén, étrendi jelölések, „Elfogyott” kapcsoló a listában, kép alt szöveggel                                  |
+| **Szezonális ajánlatok** | `offers`       | Szezonális ajánlatok (Tartalomkezelés) | Érvényesség -tól -ig: Hamarosan / Aktív / Lejárt automatikusan, „lejár X nap múlva”, ár/kedvezmény, étlap-tételek, képek                                                           |
 
 ```ts
 addons: ["real-estate", "services", "projects", "testimonials", "blog", "gallery"],
@@ -72,6 +106,8 @@ Részletek: [`modules/real-estate/README.md`](modules/real-estate/README.md).
 
 | Beállítás                     | Mit szab testre                                                                                | Példa                                                |
 | ----------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `industry`                    | Üzlettípus-profil (lásd fent)                                                                  | `"hospitality"`                                      |
+| `addonSettings`               | Bővítményenkénti beállítás                                                                     | `{ menu: { sections: ["Levesek", "Pizzák"] } }`      |
 | `labels`                      | Bármelyik menüpont és menücsoport neve (mag és bővítmény is)                                   | `{ deals: "Ügyletek", properties: "Kínálat" }`       |
 | `pipeline`                    | Az Üzletek fázisai, esélyszázalékkal; `kind: "won"` / `"lost"` a lezárt fázisokhoz             | `{ id: "offer", label: "Ajánlat", probability: 60 }` |
 | `contactTags`                 | A kapcsolatok választható címkéi                                                               | `["VIP", "Partner"]`                                 |

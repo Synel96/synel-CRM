@@ -31,11 +31,22 @@ export function ContentListPage({ def }: { def: ContentTypeDef }) {
   );
   const [query, setQuery] = useState("");
   const [status, setStatusFilter] = useState("");
+  const [group, setGroup] = useState("");
 
+  // Szöveges/státusz szűrésnél a sorrend nem állítható; a típus saját
+  // szűrőjénél (pl. étlap-szekció) igen – a szűrt körön belül.
   const filtered = Boolean(query || status);
+  const inGroup = (i: ContentItem) => !group || !def.filter || i[def.filter.field] === group;
   const rows = sortedItems(content.items)
+    .filter(inGroup)
     .filter((i) => !status || i.status === status)
     .filter((i) => matchesQuery(query, i.title, i.slug));
+  const patch = (id: string, values: Record<string, unknown>) =>
+    update((d) => ({
+      items: d.items.map((x) =>
+        x.id === id ? { ...x, ...values, updatedAt: new Date().toISOString() } : x
+      ),
+    }));
 
   const columns: Column<ContentItem>[] = [
     {
@@ -60,7 +71,7 @@ export function ContentListPage({ def }: { def: ContentTypeDef }) {
         </span>
       ),
     },
-    ...(def.columns?.(data) ?? []),
+    ...(def.columns?.(data, { patch }) ?? []),
     {
       key: "status",
       header: t("content.status"),
@@ -99,7 +110,7 @@ export function ContentListPage({ def }: { def: ContentTypeDef }) {
               size="icon-xs"
               disabled={idx === 0}
               aria-label={`${t("content.moveUp")}: ${i.title}`}
-              onClick={() => update((d) => moveItem(d, i.id, -1))}
+              onClick={() => update((d) => moveItem(d, i.id, -1, inGroup))}
             >
               <ArrowUpIcon />
             </Button>
@@ -108,7 +119,7 @@ export function ContentListPage({ def }: { def: ContentTypeDef }) {
               size="icon-xs"
               disabled={idx === rows.length - 1}
               aria-label={`${t("content.moveDown")}: ${i.title}`}
-              onClick={() => update((d) => moveItem(d, i.id, 1))}
+              onClick={() => update((d) => moveItem(d, i.id, 1, inGroup))}
             >
               <ArrowDownIcon />
             </Button>
@@ -147,6 +158,23 @@ export function ContentListPage({ def }: { def: ContentTypeDef }) {
           <option value="published">{t("content.published")}</option>
           <option value="draft">{t("content.draft")}</option>
         </NativeSelect>
+        {def.filter && (
+          <NativeSelect
+            value={group}
+            onChange={(e) => setGroup(e.target.value)}
+            aria-label={def.filter.label}
+            className="sm:w-auto"
+          >
+            <option value="">
+              {def.filter.label}: {t("content.all")}
+            </option>
+            {def.filter.options().map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
+            ))}
+          </NativeSelect>
+        )}
         {filtered && (
           <p className="text-muted-foreground text-xs sm:ml-auto">{t("content.reorderHint")}</p>
         )}

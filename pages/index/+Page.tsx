@@ -37,8 +37,13 @@ export default function Page() {
   const recent = [...data.activities].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 6);
 
   const kpis = [
-    { label: t("dashboard.contacts"), value: String(stats.contacts), show: true },
-    { label: t("dashboard.openDeals"), value: String(stats.openDeals), show: modules.deals },
+    // A feliratok a menünevet követik (pl. „Vendégek”, „Nyitott rendezvények”).
+    { label: t("nav.contacts"), value: String(stats.contacts), show: true },
+    {
+      label: `${t("dashboard.open")} ${t("nav.deals").toLowerCase()}`,
+      value: String(stats.openDeals),
+      show: modules.deals,
+    },
     {
       label: t("dashboard.pipeline"),
       value: formatMoney(stats.pipelineValue),

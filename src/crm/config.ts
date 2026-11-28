@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { INDUSTRY_IDS, mergeWithIndustry } from "./industries";
 
 /*
  * Az ügyfelenkénti testreszabás sémája. Egy új ügyfélhez csak a
@@ -52,10 +53,20 @@ export type EntityType = (typeof ENTITY_TYPES)[number];
 
 export const crmConfigSchema = z
   .object({
+    /**
+     * Üzlettípus: a profil adja a modulok, bővítmények, menünevek, pipeline,
+     * címkék, egyedi mezők és mintaadatok alapértelmezését (src/crm/industries.ts).
+     */
+    industry: z.enum(INDUSTRY_IDS).default("general"),
     brand: z.object({
       name: z.string().min(1),
       /** A felület kiemelőszíne (bármilyen CSS-szín, pl. oklch). */
       accentColor: z.string().default("oklch(0.55 0.2 260)"),
+      /**
+       * Az oldalsávban az assets/logo.svg jelenjen-e meg; false esetén a
+       * márkanév kezdőbetűje a kiemelőszínnel.
+       */
+      showLogo: z.boolean().default(true),
     }),
     locale: z.enum(["hu", "en"]).default("hu"),
     currency: z.string().length(3).default("HUF"),
@@ -89,6 +100,11 @@ export const crmConfigSchema = z
      * companies, deals, tasks, vagy egy bővítményé, pl. properties).
      */
     labels: z.record(z.string(), z.string().min(1)).default({}),
+    /**
+     * Bővítményenkénti beállítások, pl. { menu: { sections: ["Előételek", …] } }.
+     * Hogy egy bővítmény mit fogad el, a saját README-je írja le.
+     */
+    addonSettings: z.record(z.string(), z.record(z.string(), z.unknown())).default({}),
     pipeline: z.array(stageSchema).min(2),
     contactTags: z.array(z.string().min(1)).default([]),
     customFields: z
@@ -127,6 +143,10 @@ export const crmConfigSchema = z
   });
 
 export type CrmConfigInput = z.input<typeof crmConfigSchema>;
+/** Az ügyfél configja: a pipeline (és minden más) a profilból is jöhet. */
+export type ClientConfigInput = Omit<CrmConfigInput, "pipeline"> & {
+  pipeline?: CrmConfigInput["pipeline"];
+};
 export type CrmConfig = z.output<typeof crmConfigSchema>;
 export type CustomFieldDef = z.output<typeof customFieldSchema>;
 export type Stage = z.output<typeof stageSchema>;
@@ -136,9 +156,12 @@ export function customFieldsOf(config: CrmConfig, entity: string): CustomFieldDe
   return config.customFields[entity] ?? [];
 }
 
-/** Típusellenőrzött config-definíció; hibás config esetén induláskor hibát dob. */
-export function defineCrmConfig(input: CrmConfigInput): CrmConfig {
-  const parsed = crmConfigSchema.safeParse(input);
+/**
+ * Típusellenőrzött config-definíció: az üzlettípus-profil alapértelmezései +
+ * az ügyfél beállításai. Hibás config esetén induláskor érthető hibát dob.
+ */
+export function defineCrmConfig(input: ClientConfigInput): CrmConfig {
+  const parsed = crmConfigSchema.safeParse(mergeWithIndustry(input));
   if (!parsed.success) {
     const issues = parsed.error.issues.map((i) => `- ${i.path.join(".")}: ${i.message}`);
     throw new Error(`Hibás crm.config:\n${issues.join("\n")}`);

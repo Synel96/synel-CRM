@@ -70,13 +70,17 @@ export function ContentSheet({ def, target, onClose }: Props) {
               initialValues={toFormValues(source as Record<string, unknown>, fields)}
               onCancel={onClose}
               extraValidate={(values): Record<string, string> => {
-                if (!def.hasPage) return {};
+                const own = def.validate?.(values) ?? {};
+                if (!def.hasPage) return own;
                 const raw = String(values.slug ?? "").trim();
-                if (!raw) return {};
+                if (!raw) return own;
                 const err = validateSlug(raw, content.items, item?.id);
                 return err
-                  ? { slug: t(err === "format" ? "content.slugFormat" : "content.slugTaken") }
-                  : {};
+                  ? {
+                      ...own,
+                      slug: t(err === "format" ? "content.slugFormat" : "content.slugTaken"),
+                    }
+                  : own;
               }}
               onDelete={
                 item

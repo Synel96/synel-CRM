@@ -149,13 +149,24 @@ export function setStatus(
   };
 }
 
-/** Elem mozgatása a sorrendben egy hellyel előre/hátra. */
-export function moveItem(data: ContentData, id: Id, dir: -1 | 1): ContentData {
+/**
+ * Elem mozgatása egy hellyel előre/hátra. Ha `inScope` meg van adva (pl. egy
+ * étlap-szekció), a szomszéd csak a szűrt körből választódik, a többi elem
+ * egymáshoz viszonyított sorrendje nem változik.
+ */
+export function moveItem(
+  data: ContentData,
+  id: Id,
+  dir: -1 | 1,
+  inScope: (item: ContentItem) => boolean = () => true
+): ContentData {
   const list = sortedItems(data.items);
-  const i = list.findIndex((x) => x.id === id);
-  const j = i + dir;
-  if (i < 0 || j < 0 || j >= list.length) return data;
-  [list[i], list[j]] = [list[j], list[i]];
+  const scoped = list.map((x, idx) => (inScope(x) ? idx : -1)).filter((idx) => idx >= 0);
+  const k = scoped.findIndex((idx) => list[idx].id === id);
+  if (k < 0 || k + dir < 0 || k + dir >= scoped.length) return data;
+  const a = scoped[k];
+  const b = scoped[k + dir];
+  [list[a], list[b]] = [list[b], list[a]];
   const order = new Map(list.map((x, idx) => [x.id, idx]));
   return { items: data.items.map((x) => ({ ...x, sortOrder: order.get(x.id)! })) };
 }

@@ -1,6 +1,7 @@
 import { MenuIcon } from "lucide-react";
 import { useLayoutEffect, useState, type ReactNode } from "react";
 import { usePageContext } from "vike-react/usePageContext";
+import logoUrl from "@/assets/logo.svg";
 import crmConfig from "@/crm.config";
 import { Button } from "@/components/ui/button";
 import {
@@ -73,9 +74,14 @@ function NavLinks({ onNavigate }: { onNavigate?: boolean }) {
 function Brand() {
   return (
     <a href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-      <span className="flex size-7 items-center justify-center rounded-lg bg-(--crm-accent) text-xs text-white">
-        {crmConfig.brand.name.slice(0, 1)}
-      </span>
+      {crmConfig.brand.showLogo ? (
+        // A logó az assets/logo.svg (favicon és betöltőképernyő is) – ügyfelenként cserélhető.
+        <img src={logoUrl} alt="" aria-hidden className="size-7 rounded-lg" />
+      ) : (
+        <span className="flex size-7 items-center justify-center rounded-lg bg-(--crm-accent) text-xs text-white">
+          {crmConfig.brand.name.slice(0, 1)}
+        </span>
+      )}
       {crmConfig.brand.name}
     </a>
   );

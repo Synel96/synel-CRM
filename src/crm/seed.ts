@@ -1,4 +1,5 @@
 import type { CrmConfig, CustomFieldDef } from "./config";
+import { industryOf } from "./industries";
 import { createRecord, toDateKey } from "./operations";
 import { emptyData, type CrmData, type CustomValues } from "./types";
 
@@ -24,17 +25,6 @@ const PEOPLE = [
   ["Bence", "Varga", "Projektmenedzser"],
   ["Lilla", "Kiss", "Irodavezető"],
   ["Dávid", "Molnár", "Tulajdonos"],
-] as const;
-
-const DEALS = [
-  ["Éves szoftverlicenc", 2_400_000],
-  ["Weboldal újratervezés", 1_150_000],
-  ["Karbantartási szerződés", 600_000],
-  ["Raktárautomatizálás", 8_900_000],
-  ["Tanácsadási csomag", 450_000],
-  ["Marketingkampány Q1", 1_800_000],
-  ["Irodai hálózat bővítés", 3_200_000],
-  ["Webshop integráció", 2_750_000],
 ] as const;
 
 function demoCustomValues(fields: CustomFieldDef[], i: number): CustomValues {
@@ -87,7 +77,9 @@ export function createDemoData(config: CrmConfig, now = new Date()): CrmData {
   });
 
   const stages = config.pipeline;
-  const dealIds = DEALS.map(([title, value], i) => {
+  // Az üzletek és feladatok szövege az üzlettípus-profilból jön (src/crm/industries.ts).
+  const demo = industryOf(config.industry).demo;
+  const dealIds = demo.deals.map(([title, value], i) => {
     const stage = stages[i % stages.length];
     const res = createRecord(data, "deals", {
       title,
@@ -104,14 +96,15 @@ export function createDemoData(config: CrmConfig, now = new Date()): CrmData {
     return res.record.id;
   });
 
-  const tasks = [
-    ["Ajánlat elküldése", -2, "high"],
-    ["Visszahívás egyeztetés miatt", 0, "normal"],
-    ["Szerződéstervezet átnézése", 1, "high"],
-    ["Bemutató előkészítése", 4, "normal"],
-    ["Hírlevél-lista frissítése", null, "low"],
+  const schedule = [
+    [-2, "high"],
+    [0, "normal"],
+    [1, "high"],
+    [4, "normal"],
+    [null, "low"],
   ] as const;
-  tasks.forEach(([title, offset, priority], i) => {
+  demo.tasks.slice(0, schedule.length).forEach((title, i) => {
+    const [offset, priority] = schedule[i];
     data = createRecord(data, "tasks", {
       title,
       dueDate: offset === null ? null : toDateKey(day(offset)),
@@ -123,12 +116,14 @@ export function createDemoData(config: CrmConfig, now = new Date()): CrmData {
     }).data;
   });
 
-  const activities = [
-    ["call", "Bemutatkozó hívás, érdeklődik az éves csomag iránt.", 0],
-    ["email", "Elküldtem az árajánlatot PDF-ben.", 1],
-    ["meeting", "Személyes egyeztetés az irodában, döntés jövő héten.", 2],
-    ["note", "Költségkeret: kb. 2,5 M Ft, Q1-ben szeretnének indulni.", 3],
-  ] as const;
+  const kinds = ["call", "email", "meeting", "note"] as const;
+  const bodies = demo.activities ?? [
+    "Bemutatkozó hívás, érdeklődik az éves csomag iránt.",
+    "Elküldtem az árajánlatot PDF-ben.",
+    "Személyes egyeztetés az irodában, döntés jövő héten.",
+    "Költségkeret: kb. 2,5 M Ft, Q1-ben szeretnének indulni.",
+  ];
+  const activities = kinds.map((kind, i) => [kind, bodies[i], i] as const);
   activities.forEach(([kind, body, i]) => {
     data = createRecord(data, "activities", {
       kind,

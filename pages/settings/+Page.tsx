@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { CrmPage } from "@/components/crm/Page";
 import { activeAddons } from "@/src/crm/addon-registry";
+import { industryOf } from "@/src/crm/industries";
 import { getImageUploader } from "@/src/crm/media";
 import { env } from "@/src/env";
 import { t, type MessageKey } from "@/src/crm/i18n";
@@ -60,6 +61,7 @@ export default function Page() {
           <CardTitle>{t("settings.config")}</CardTitle>
           <p className="text-muted-foreground text-xs">{t("settings.configHint")}</p>
           <dl className="divide-y">
+            {row(t("settings.industry"), industryOf(c.industry).name)}
             {row(t("settings.brand"), c.brand.name)}
             {row(t("settings.locale"), c.locale)}
             {row(t("settings.currency"), c.currency)}

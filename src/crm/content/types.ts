@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { ComponentType, ReactNode } from "react";
 import type { Column } from "@/components/crm/DataTable";
-import type { FormField } from "../fields";
+import type { FormField, FormValues } from "../fields";
 import type { Collection, CrmData, Id } from "../types";
 import type { ContentItem } from "./logic";
 
@@ -36,8 +36,21 @@ export interface ContentTypeDef {
   defaults?: () => Record<string, unknown>;
   /** Mentés előtti átalakítás (pl. szövegből szám). */
   transform?: (patch: Record<string, unknown>) => Record<string, unknown>;
-  /** Plusz oszlopok a listában (a cím után). */
-  columns?: (core: CrmData) => Column<ContentItem>[];
+  /**
+   * Plusz oszlopok a listában (a cím után). Az `actions.patch` egy mező
+   * gyors módosítása a listából (pl. „elfogyott” kapcsoló).
+   */
+  columns?: (
+    core: CrmData,
+    actions: { patch: (id: Id, patch: Record<string, unknown>) => void }
+  ) => Column<ContentItem>[];
+  /**
+   * Szűrő a lista fölött egy saját mező szerint (pl. étlap-szekció). Szűrt
+   * nézetben a sorrend a szűrt körön belül állítható.
+   */
+  filter?: { field: string; label: string; options: () => string[] };
+  /** Plusz ellenőrzés mentés előtt: mezőnév → hibaüzenet. */
+  validate?: (values: FormValues) => Record<string, string>;
   /** Plusz sorok az áttekintő kártyán, pl. átlagos értékelés. */
   stats?: (items: ContentItem[]) => { label: string; value: string }[];
   /** Mintaadatok (a mag és a korábbi bővítmények adataira hivatkozhat). */

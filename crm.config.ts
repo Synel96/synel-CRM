@@ -1,15 +1,23 @@
 /*
  * ─── ÜGYFÉL-KONFIGURÁCIÓ ─────────────────────────────────────────────────
- * Új ügyfélnél ezt a fájlt szabd személyre (vagy exportálj egy presetet a
- * presets/ mappából: `export { default } from "./presets/real-estate";`).
- * A séma és a mezők leírása: src/crm/config.ts
+ * 1. Válaszd ki az üzlettípust (`industry`) – ez adja a modulokat,
+ *    bővítményeket, menüneveket, pipeline-t, címkéket és egyedi mezőket:
+ *      "general"      – általános CRM
+ *      "agency"       – webstúdió / ügynökség (szolgáltatások, projektek, blog…)
+ *      "real-estate"  – ingatlaniroda (ingatlanok, keresési igények…)
+ *      "hospitality"  – vendéglátóhely (étlap, szezonális ajánlatok…)
+ * 2. Írd át, ami az ügyfélnél más (minden kulcs felülírja a profilét).
+ * A profilok: src/crm/industries.ts · a séma: src/crm/config.ts
+ * Kész példák: presets/ (pl. `export { default } from "./presets/hospitality";`)
  */
 import { defineCrmConfig } from "./src/crm/config";
 
 export default defineCrmConfig({
+  industry: "agency",
+
   brand: {
-    name: "Synel CRM",
-    accentColor: "oklch(0.55 0.2 260)",
+    name: "Synelweb CRM",
+    accentColor: "#2B5FD9",
   },
   locale: "hu",
   currency: "HUF",
@@ -17,40 +25,10 @@ export default defineCrmConfig({
   seedDemoData: true,
 
   // Képek Cloudinary-mappája (a hozzáférés a .env-ben: VITE_CLOUDINARY_*)
-  media: { folder: "synel-crm" },
+  media: { folder: "synelweb" },
 
-  modules: { companies: true, deals: true, tasks: true },
-
-  // Bővítmények (lásd src/crm/addon-registry.ts), pl. ["real-estate"]
-  addons: ["real-estate", "services", "projects", "testimonials", "blog", "gallery"],
-
-  // Menüpontok átnevezése, pl. { deals: "Projektek" }
-  labels: {},
-
-  pipeline: [
-    { id: "lead", label: "Új érdeklődő", probability: 10 },
-    { id: "qualified", label: "Minősített", probability: 30 },
-    { id: "proposal", label: "Ajánlat kiküldve", probability: 60 },
-    { id: "negotiation", label: "Tárgyalás", probability: 80 },
-    { id: "won", label: "Megnyert", probability: 100, kind: "won" },
-    { id: "lost", label: "Elvesztett", probability: 0, kind: "lost" },
-  ],
-
-  contactTags: ["Partner", "VIP", "Hideg lead"],
-
-  customFields: {
-    contact: [
-      {
-        key: "source",
-        label: "Forrás",
-        type: "select",
-        options: ["Weboldal", "Ajánlás", "Hirdetés", "Rendezvény"],
-        showInList: true,
-      },
-      { key: "newsletter", label: "Hírlevélre feliratkozott", type: "boolean" },
-    ],
-    company: [{ key: "taxNumber", label: "Adószám", type: "text" }],
-    deal: [],
-    task: [],
-  },
+  // Példák felülírásra (a profil értékei helyett):
+  // addons: ["services", "projects", "testimonials", "blog", "gallery", "real-estate"],
+  // labels: { deals: "Projektek", "group.content": "Weboldal" },
+  // modules: { companies: false },
 });
