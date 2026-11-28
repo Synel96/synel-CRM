@@ -8,9 +8,15 @@ import { DataTable, type Column } from "@/components/crm/DataTable";
 import { CrmPage, accentButton } from "@/components/crm/Page";
 import { cn } from "@/lib/utils";
 import { isAddonActive } from "@/src/crm/addon-registry";
-import { moveItem, setStatus, sortedItems, type ContentItem } from "@/src/crm/content/logic";
+import {
+  isScheduled,
+  moveItem,
+  setStatus,
+  sortedItems,
+  type ContentItem,
+} from "@/src/crm/content/logic";
 import type { ContentTypeDef } from "@/src/crm/content/types";
-import { navLabel, t } from "@/src/crm/i18n";
+import { formatDateTime, navLabel, t } from "@/src/crm/i18n";
 import { matchesQuery } from "@/src/crm/operations";
 import { ContentSheet, type ContentTarget } from "./ContentSheet";
 import { useContent } from "./useContent";
@@ -67,9 +73,15 @@ export function ContentListPage({ def }: { def: ContentTypeDef }) {
           title={i.status === "published" ? t("content.unpublish") : t("content.publish")}
           className="rounded-full"
         >
-          <Badge variant={i.status === "published" ? "success" : "outline"}>
-            {i.status === "published" ? t("content.published") : t("content.draft")}
-          </Badge>
+          {isScheduled(i) ? (
+            <Badge variant="accent">
+              {t("content.scheduled")} · {formatDateTime(i.publishedAt!)}
+            </Badge>
+          ) : (
+            <Badge variant={i.status === "published" ? "success" : "outline"}>
+              {i.status === "published" ? t("content.published") : t("content.draft")}
+            </Badge>
+          )}
         </button>
       ),
     },

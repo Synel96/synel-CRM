@@ -7,7 +7,7 @@ import { t, type MessageKey } from "./i18n";
 import { contactName } from "./operations";
 import type { CrmData, CustomValue, CustomValues } from "./types";
 
-export type FormFieldType = FieldType | "relation" | "tags";
+export type FormFieldType = FieldType | "relation" | "tags" | "datetime" | "markdown";
 
 export type FormField = {
   /** Alapmezőnél a rekord property neve, egyedi mezőnél `custom.<key>`. */
@@ -16,6 +16,8 @@ export type FormField = {
   type: FormFieldType;
   required: boolean;
   options?: { value: string; label: string }[];
+  /** Markdown-mezőnél: a szövegbe beszúrható képek. */
+  images?: { id: string; url: string; alt: string }[];
   wide?: boolean;
   /** Üres szám/pénz mező null legyen (0 helyett). */
   nullable?: boolean;
@@ -129,6 +131,8 @@ export function toFormValues(record: Record<string, unknown>, fields: FormField[
     const raw = f.name.startsWith("custom.") ? custom[f.name.slice(7)] : record[f.name];
     if (f.type === "boolean") out[f.name] = raw === true;
     else if (f.type === "tags") out[f.name] = Array.isArray(raw) ? raw.join(", ") : "";
+    else if (f.type === "datetime")
+      out[f.name] = typeof raw === "string" && raw ? toLocalInput(raw) : "";
     else out[f.name] = raw === null || raw === undefined ? "" : String(raw);
   }
   return out;
@@ -144,6 +148,9 @@ function convert(f: FormField, v: string | boolean): unknown {
       const n = Number(s.replace(/\s/g, "").replace(",", "."));
       return Number.isFinite(n) ? n : null;
     }
+    case "datetime":
+      // A datetime-local mező helyi időt ad („2026-12-01T09:00”) → ISO (UTC).
+      return s === "" ? null : new Date(s).toISOString();
     case "relation":
     case "date":
       return s === "" ? null : s;
@@ -197,4 +204,12 @@ export function displayCustom(
   if (f.type === "money" && typeof value === "number") return formatMoney(value);
   if (f.type === "date" && typeof value === "string") return formatDate(value);
   return String(value);
+}
+
+/** ISO időbélyeg → datetime-local mező értéke helyi időben („YYYY-MM-DDTHH:mm”). */
+export function toLocalInput(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }

@@ -41,7 +41,7 @@ export function ContentSheet({ def, target, onClose }: Props) {
   const labels = def.labels();
   const item =
     active?.mode === "edit" ? (content.items.find((i) => i.id === active.id) ?? null) : null;
-  const fields = contentFields(def, crmConfig, data);
+  const fields = contentFields(def, crmConfig, data, item);
   const source: object | null =
     item ??
     (active?.mode === "new"

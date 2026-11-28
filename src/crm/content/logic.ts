@@ -95,8 +95,11 @@ export function saveContentItem(
   const slug = hasPage
     ? uniqueSlug(slugify(requested || existing?.slug || merged.title), data.items, id ?? undefined)
     : "";
-  const publishedAt =
-    status === "published" ? (existing?.publishedAt ?? merged.publishedAt ?? ts) : null;
+  // Kifejezetten megadott publikálási idő (pl. blog-időzítés) elsőbbséget
+  // kap; különben az első publikálás ideje marad meg.
+  const requestedAt =
+    typeof input.publishedAt === "string" && input.publishedAt ? input.publishedAt : null;
+  const publishedAt = status === "published" ? (requestedAt ?? existing?.publishedAt ?? ts) : null;
 
   const item: ContentItem = {
     ...merged,
@@ -188,6 +191,18 @@ export function normalizeContent(raw: unknown): ContentData {
       custom: i.custom ?? {},
     })),
   };
+}
+
+/** Publikált, de a megjelenés ideje még a jövőben van (időzített). */
+export function isScheduled(item: Pick<ContentItem, "status" | "publishedAt">, now = new Date()) {
+  return (
+    item.status === "published" && item.publishedAt !== null && item.publishedAt > now.toISOString()
+  );
+}
+
+/** A weboldalon most látható-e: publikált és a megjelenés ideje elmúlt. */
+export function isLive(item: Pick<ContentItem, "status" | "publishedAt">, now = new Date()) {
+  return item.status === "published" && !isScheduled(item, now);
 }
 
 export function contentCounts(data: ContentData) {

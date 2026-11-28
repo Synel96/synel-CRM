@@ -27,8 +27,11 @@ export interface ContentTypeDef {
   hasPage: boolean;
   /** Legfeljebb ennyi kép (0 = nincs képkezelés). */
   maxImages: number;
-  /** A típus saját űrlapmezői (a cím után, a közös mezők előtt). */
-  fields: (core: CrmData) => FormField[];
+  /**
+   * A típus saját űrlapmezői (a cím után, a közös mezők előtt). Az `item` a
+   * szerkesztett elem (új elemnél null) – pl. a beszúrható képekhez.
+   */
+  fields: (core: CrmData, item: ContentItem | null) => FormField[];
   /** Új elem kezdőértékei. */
   defaults?: () => Record<string, unknown>;
   /** Mentés előtti átalakítás (pl. szövegből szám). */

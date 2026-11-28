@@ -52,14 +52,15 @@ Kikapcsolt modul eltűnik a menüből, az áttekintésről és az űrlapokról
 
 ### Bővítmények – `addons`
 
-| Bővítmény          | Kulcs          | Menüpontok                       | Mit tud                                                                                                         |
-| ------------------ | -------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| **Ingatlan**       | `real-estate`  | Ingatlanok, Keresési igények     | Ingatlanok kártyás nézetben, fotók (Cloudinary), tulajdonos, vevői keresések, automatikus párosítás, KPI-widget |
-| **Szolgáltatások** | `services`     | Szolgáltatások (Tartalomkezelés) | Név, rövid/részletes leírás, ár + megjegyzés („-tól”, „/hó”), kép, URL, SEO, publikálás, sorrend, kiemelés      |
-| **Vélemények**     | `testimonials` | Vélemények (Tartalomkezelés)     | Név, cég, 1–5 csillag, szöveg, forrás, kép; kapcsolathoz és szolgáltatáshoz köthető; átlagértékelés             |
+| Bővítmény          | Kulcs          | Menüpontok                       | Mit tud                                                                                                           |
+| ------------------ | -------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Ingatlan**       | `real-estate`  | Ingatlanok, Keresési igények     | Ingatlanok kártyás nézetben, fotók (Cloudinary), tulajdonos, vevői keresések, automatikus párosítás, KPI-widget   |
+| **Szolgáltatások** | `services`     | Szolgáltatások (Tartalomkezelés) | Név, rövid/részletes leírás, ár + megjegyzés („-tól”, „/hó”), kép, URL, SEO, publikálás, sorrend, kiemelés        |
+| **Vélemények**     | `testimonials` | Vélemények (Tartalomkezelés)     | Név, cég, 1–5 csillag, szöveg, forrás, kép; kapcsolathoz és szolgáltatáshoz köthető; átlagértékelés               |
+| **Blog**           | `blog`         | Blog (Tartalomkezelés)           | Markdown-szerkesztő előnézettel, kivonat, címkék, szerző, olvasási idő, időzített publikálás, képek alt szöveggel |
 
 ```ts
-addons: ["real-estate", "services", "testimonials"],
+addons: ["real-estate", "services", "testimonials", "blog"],
 ```
 
 Részletek: [`modules/real-estate/README.md`](modules/real-estate/README.md).
@@ -195,6 +196,7 @@ adatokkal, oldalakkal, menüpontokkal, áttekintő widgettel és kapcsolatpanell
 | `real-estate`  | `modules/real-estate/`  | Ingatlanok, fotók, vevői keresések, automatikus párosítás |
 | `services`     | `modules/services/`     | Szolgáltatások (tartalommotor)                            |
 | `testimonials` | `modules/testimonials/` | Vélemények (tartalommotor)                                |
+| `blog`         | `modules/blog/`         | Blog Markdown-szerkesztővel (tartalommotor)               |
 
 **Bekapcsolás:** `crm.config.ts` → `addons: ["real-estate"]`.
 
@@ -227,6 +229,28 @@ tervezett projektek, blog, galéria) egy közös motorra épülnek
   magyar ékezetekkel is (`Logótervezés & arculat` → `logotervezes-arculat`),
   típuson belül egyedi, és a cím módosításakor **nem változik**, hogy a
   weboldalon ne törjenek el a linkek. Mellette **SEO-cím és -leírás**.
+
+**Időzítés:** a `publishedAt` kézzel is megadható (`datetime` mező). Ha a
+státusz „Publikált”, de az időpont a jövőben van, a listában „Időzítve”
+látszik (`isScheduled()`), a weboldal pedig csak az időpont után mutatja
+(`isLive()`).
+
+**Markdown-mező** (`type: "markdown"`, pl. a blog `body` mezője):
+
+- eszköztár (címsor, félkövér, dőlt, link, listák, idézet, kód, kép),
+  gyorsbillentyűk (Ctrl+B / I / K), „Szerkesztés” és „Előnézet” fül,
+  szószám és olvasási idő, „?” súgó a Markdown-szintaxishoz;
+- **kép beszúrása** az elemhez feltöltött képekből, a képek alt szövegével
+  (`![alt](url)`). A szerkesztő jelzi, ha egy beszúrt képnél hiányzik az alt
+  szöveg. Böngészős (demó) tárolásnál a kép rövid `crm-image:<id>`
+  hivatkozással kerül a szövegbe (`resolveImageRefs()` oldja fel),
+  Cloudinary-vel a valódi URL-lel;
+- az előnézet a `marked` és a `DOMPurify` csomaggal készül, lustán betöltve.
+  A beírt HTML-ből minden szkript és eseménykezelő kiszűrődik. **A
+  weboldalon is tisztítsd a Markdownból készült HTML-t** (pl. DOMPurify vagy
+  `sanitize-html`).
+- A tartalom Markdownként tárolódik, így a weboldal bármilyen
+  Markdown-renderelővel megjelenítheti.
 
 **Új tartalomtípus** egy leírófájl és egy oldal:
 

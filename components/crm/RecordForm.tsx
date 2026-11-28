@@ -1,6 +1,7 @@
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { HelpTip } from "@/components/ui/help-tip";
+import { MarkdownEditor } from "./MarkdownEditor";
 import { Input, Label, NativeSelect, Textarea } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { t } from "@/src/crm/i18n";
@@ -22,6 +23,7 @@ const INPUT_TYPE: Record<string, string> = {
   phone: "tel",
   url: "url",
   date: "date",
+  datetime: "datetime-local",
   number: "text",
   money: "text",
 };
@@ -132,6 +134,17 @@ function FieldInput({
   value: string;
   onChange: (name: string, value: string) => void;
 }) {
+  if (f.type === "markdown") {
+    return (
+      <MarkdownEditor
+        id={id}
+        label={f.label}
+        value={value}
+        onChange={(v) => onChange(f.name, v)}
+        images={f.images}
+      />
+    );
+  }
   if (f.type === "textarea") {
     return <Textarea id={id} value={value} onChange={(e) => onChange(f.name, e.target.value)} />;
   }

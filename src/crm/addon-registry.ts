@@ -8,13 +8,14 @@ import crmConfig from "@/crm.config";
 import realEstate from "@/modules/real-estate";
 import services from "@/modules/services";
 import testimonials from "@/modules/testimonials";
+import blog from "@/modules/blog";
 import type { CrmAddon } from "./addons";
 
 // Függvényben, nem modulszinten: így a körkörös importok (bővítmény →
 // store → registry) nem okoznak gondot, a lista csak első használatkor épül.
 function available(): CrmAddon[] {
   // A sorrend számít: a vélemények mintaadatai a szolgáltatásokra hivatkoznak.
-  return [realEstate, services, testimonials];
+  return [realEstate, services, testimonials, blog];
 }
 
 let active: CrmAddon[] | null = null;
