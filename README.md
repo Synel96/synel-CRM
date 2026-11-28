@@ -87,9 +87,39 @@ módban egy utólag bekapcsolt bővítmény is mintaadatot kap; éles ügyféln�
 
 ## Új ügyfél beállítása
 
-1. **Új repó a kitből.** Másold le a repót, vagy hozz létre belőle újat
-   (GitHub: _Use this template_), az ügyfél nevével.
-2. **`crm.config.ts`:** ez az egyetlen fájl, amit ügyfelenként módosítani kell.
+Minden ügyfél **saját CRM-repót** kap, ami ebből a repóból indul, és a közös
+git-előzményeket megtartja. A weboldal ettől külön repó és külön
+Vercel-projekt marad:
+
+```
+synel-crm      ← a „gyári” CRM (mag + közös bővítmények)
+   │  git merge (frissítések)
+   ▼
+ugyfel-crm     ← ügyfélrepó: csak config, preset, saját bővítmény → app.ugyfel.hu
+ugyfel-web     ← a weboldal (külön repó)                          → ugyfel.hu
+```
+
+> Ne a GitHub _Use this template_ gombjával hozd létre: az előzmények nélkül
+> másol, és utána nem tudod behúzni a `synel-crm` frissítéseit. A CRM-et a
+> weboldal repójába se tedd: a két projekt összenőne (közös build, közös
+> hibák), és a frissítés is bonyolult lenne.
+
+1. **Ügyfélrepó létrehozása.** Hozz létre a GitHubon egy üres repót
+   (pl. `ugyfel-crm`), majd:
+
+   ```sh
+   git clone https://github.com/Synel96/synel-crm ugyfel-crm
+   cd ugyfel-crm
+   git remote rename origin upstream   # a „gyári” CRM, innen jönnek a frissítések
+   git remote add origin https://github.com/Synel96/ugyfel-crm
+   git push -u origin main
+   ```
+
+   Vercelen új projekt ebből a repóból, domain: `app.ugyfel.hu`. A DNS-ben:
+   `app` CNAME → `cname.vercel-dns.com`.
+
+2. **`crm.config.ts`:** ügyfelenként szinte csak ezt a fájlt kell módosítani
+   (lásd [Testreszabás](#testreszabás-mit-hol-változtass)).
 
    | Beállítás      | Mire jó                                                       |
    | -------------- | ------------------------------------------------------------- |
@@ -115,6 +145,23 @@ módban egy utólag bekapcsolt bővítmény is mintaadatot kap; éles ügyféln�
    // crm.config.ts
    export { default } from "./presets/real-estate";
    ```
+
+### Testreszabás: mit hol változtass
+
+Szinte minden ügyfélnél kell egy kis igazítás. Hogy a frissítések később is
+ütközés nélkül behúzhatók legyenek, ebben a sorrendben próbálkozz:
+
+| Szint                               | Hol                                             | Mire                                                                       | Példa                                                                 |
+| ----------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| **1. Config** (az esetek többsége)  | `crm.config.ts`                                 | nevek, pipeline, egyedi mezők, címkék, márka, modulok és bővítmények ki-be | „Üzletek” → „Ügyletek”, „Energetikai tanúsítvány” mező az ingatlanhoz |
+| **2. Bővítmény-beállítás**          | `crm.config.ts` + a bővítmény a `synel-crm`-ben | ha egy közös bővítmény ügyfelenként másképp működjön                       | más státuszlista az ingatlanoknál                                     |
+| **3. Ügyfélspecifikus kód** (ritka) | `modules/ugyfel-*/` az ügyfélrepóban            | ami tényleg csak ennek az ügyfélnek kell                                   | egy egyedi riport vagy integráció                                     |
+
+**Aranyszabály:** az ügyfélrepóban **ne módosítsd a magot** (`src/crm/`,
+`components/crm/`, `pages/`) és a közös bővítményeket (`modules/real-estate/`
+stb.). Ha ott kell változtatni, javítsd a `synel-crm`-ben, és onnan húzd be
+az ügyfélhez. Így a javítások és az új funkciók minden ügyfélhez eljutnak,
+és nem lesz sok, egymástól elágazott CRM-ed.
 
 ### Egyedi mezők
 
@@ -260,10 +307,24 @@ történik (`f_auto,q_auto`, a kártyákon kicsinyítve; `src/crm/media.ts` →
   törléshez API secret kell. A `publicId` minden fotónál el van mentve,
   így ezek később backendből takaríthatók.
 
-## Frissítés a starter kitből
+## Frissítések behúzása
 
-A repó a [hydration-starter-kit](https://github.com/Synel96/hydration-starter-kit)
-előzményeire épül. Az alap frissítései így olvaszthatók be:
+**Ügyfélrepóba, a `synel-crm`-ből** (a javítások és az új funkciók):
+
+```sh
+git fetch upstream
+git merge upstream/main
+npm install && npm run check   # ellenőrzés a push előtt
+git push                       # a Vercel automatikusan élesíti
+```
+
+Ha csak a configot és a saját `modules/ugyfel-*` bővítményt módosítottad,
+ez ütközés nélkül megy. A `crm.config.ts`-ben előfordulhat ütközés, ha új
+beállítás jelent meg: ilyenkor tartsd meg az ügyfél értékeit, és vedd át az
+új kulcsokat.
+
+**A `synel-crm`-be, a [hydration-starter-kit](https://github.com/Synel96/hydration-starter-kit)-ből**
+(az alap frissítései):
 
 ```sh
 git remote add starter https://github.com/Synel96/hydration-starter-kit  # egyszer
